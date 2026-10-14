@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Atualizar base – Painel de Contratos</title>
+<link rel="icon" href="img/logo-iel.png">
+<link rel="stylesheet" href="css/painel.css?v=2.0.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.0.0">
+<script>
+  (function(){
+    try {
+      var t = localStorage.getItem('jaTheme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+<div class="carga-wrap">
+  <div class="carga-topo">
+    <div>
+      <a class="usuario-acao" href="index.html">← Voltar ao painel</a>
+      <h1>Atualizar base</h1>
+    </div>
+    <div class="usuario-barra">
+      <span class="usuario-nome" id="usuarioNome"></span>
+      <button class="usuario-acao" id="btnSair" type="button">Sair</button>
+    </div>
+  </div>
+
+  <p class="carga-msg" id="msgGeral">Carregando…</p>
+
+  <div id="conteudo" hidden>
+    <!-- 1. tipo -->
+    <div class="card carga-passo" id="passoTipo">
+      <h2>1. Que planilha é esta?</h2>
+      <div class="carga-opcoes">
+        <label class="carga-opcao"><input type="radio" name="tipo" value="completa" checked>
+          <div><b>Extração completa</b><span>Todos os contratos (ativos, encerrados e antigos). Quem não estiver na planilha vira "Contrato Excluído".</span></div></label>
+        <label class="carga-opcao"><input type="radio" name="tipo" value="parcial">
+          <div><b>Só alguns contratos</b><span>Atualiza e acrescenta os que vieram. Ninguém é marcado como excluído.</span></div></label>
+      </div>
+      <div class="carga-linha" style="margin-top:12px;">
+        <label>Data de referência dos dados
+          <input class="input" type="date" id="dataReferencia" required></label>
+      </div>
+    </div>
+
+    <!-- 2. arquivo -->
+    <div class="card carga-passo">
+      <h2>2. Escolha o arquivo</h2>
+      <label class="carga-arquivo" id="zonaArquivo">
+        <input type="file" id="campoArquivo" accept=".xlsx,.xls,.json">
+        <span id="textoArquivo"><b>Clique para escolher</b> ou arraste a planilha de extração (.xlsx) aqui</span>
+      </label>
+      <p class="carga-msg" id="msgLeitura"></p>
+      <details class="carga-lista" id="listaProblemas" hidden>
+        <summary></summary>
+        <div class="table-wrap"><table><thead><tr><th>Linha</th><th>Contrato</th><th>O que houve</th></tr></thead><tbody></tbody></table></div>
+      </details>
+    </div>
+
+    <!-- 3. grafias novas -->
+    <div class="card carga-passo" id="passoGrafias" hidden>
+      <h2>3. Grafias novas</h2>
+      <p>Estes valores ainda não são conhecidos. Escolha como cada um deve aparecer no painel. A escolha fica guardada para as próximas cargas.</p>
+      <div id="listaGrafias"></div>
+    </div>
+
+    <div class="carga-botoes" id="botoesPrevia" hidden>
+      <button class="acesso-botao" type="button" id="btnPrevia">Ver o que vai mudar</button>
+    </div>
+
+    <!-- 4. prévia -->
+    <div class="card carga-passo" id="passoPrevia" hidden>
+      <h2>Prévia — nada foi gravado ainda</h2>
+      <div class="carga-numeros" id="numerosPrevia"></div>
+      <p class="carga-msg erro" id="alertaPrevia"></p>
+      <div id="listasPrevia"></div>
+      <div class="carga-botoes">
+        <button class="acesso-botao" type="button" id="btnConfirmar">Confirmar e gravar</button>
+        <button class="botao-secundario" type="button" id="btnCancelar">Cancelar</button>
+      </div>
+      <p class="carga-msg" id="msgGravar"></p>
+    </div>
+
+    <!-- histórico -->
+    <div class="card carga-passo">
+      <h2>Cargas feitas</h2>
+      <div class="carga-lista"><div class="table-wrap"><table>
+        <thead><tr><th>Dados de</th><th>Tipo</th><th>Arquivo</th><th>Gravada em</th><th>Novos</th><th>Mudaram</th><th>Excluídos</th><th></th></tr></thead>
+        <tbody id="tabelaCargas"></tbody>
+      </table></div></div>
+      <div class="carga-botoes">
+        <button class="botao-secundario botao-perigo" type="button" id="btnDesfazer" hidden>Desfazer a última carga</button>
+      </div>
+      <p class="carga-msg" id="msgDesfazer"></p>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/supabase-2.45.4.min.js"></script>
+<script src="vendor/xlsx-0.20.3.full.min.js"></script>
+<script src="js/config.js?v=2.0.0"></script>
+<script src="js/acesso.js?v=2.0.0"></script>
+<script src="js/planilha.js?v=2.0.0"></script>
+<script src="js/carga.js?v=2.0.0"></script>
+</body>
+</html>

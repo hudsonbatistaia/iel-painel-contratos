@@ -1,0 +1,1091 @@
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    color-scheme: light;
+    --page-bg:        #f9f9f7;
+    --surface-1:      #fcfcfb;
+    --surface-2:      #f2f1ec;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.10);
+    --border-strong:  rgba(11,11,11,0.16);
+
+    --accent:         #2a78d6;
+    --accent-wash:    rgba(42,120,214,0.10);
+    --accent-ring:    rgba(42,120,214,0.35);
+    /* Tom mais escuro que --accent, só pro fundo de tab ativa (texto branco em
+       cima) — o --accent puro dá 4,42:1 com branco, abaixo dos 4,5:1 exigidos
+       pra texto normal; esse tom dá 5,76:1. */
+    --tab-active-bg:  #2366b6;
+
+    --status-good:      #0ca30c;
+    --status-good-wash: rgba(12,163,12,0.10);
+    --status-warning:      #fab219;
+    --status-warning-wash: rgba(250,178,25,0.16);
+    --status-serious:      #ec835a;
+    --status-serious-wash: rgba(236,131,90,0.14);
+    --status-critical:      #d03b3b;
+    --status-critical-wash: rgba(208,59,59,0.10);
+    --status-neutral:      #6b6a66;
+    --status-neutral-wash: rgba(107,106,102,0.10);
+    --status-pending:      #4a3aa7;
+    --status-pending-wash: rgba(74,58,167,0.10);
+
+    /* "Maiores e menores de idade" e "Rescisão antecipada" (23/08/2026) — tons
+       diferentes do --accent padrão pra separar visualmente as 3 seções de
+       perfil etário (demografia hoje / demografia legal / risco de rescisão).
+       Valores do Hudson eram pensados pra tema escuro (tipo Primer dark) — no
+       claro, texto escuro sobre eles não batia contraste (branco batia pior
+       ainda), então o tom claro é uma variante mais saturada/escura da mesma
+       cor, mesmo padrão já usado em --accent e nos --venc-*.
+       --idade-maior refeito em 24/08/2026 (3ª rodada): o cinza médio original
+       (#7b8590 claro / #8b949e escuro) tinha só 1,0–1,6:1 de contraste contra
+       o azul --idade-menor — quase a mesma luminosidade, então a barra
+       empilhada lia como uma faixa única sem separação nenhuma entre os dois
+       trechos. #30363d (pedido do Hudson) resolve isso no claro (3,17:1
+       contra o azul, ainda ≥3:1 contra o card). No escuro esse mesmo tom
+       quase some contra o fundo quase-preto (~1,4:1) — troquei por #606870,
+       o melhor equilíbrio achado entre contraste contra o azul claro e
+       contra o fundo escuro (~2,9-3,1:1 nos dois). Texto dentro do trecho
+       cinza virou branco fixo nos dois temas (tinta escura não fecha 4,5:1
+       em nenhum dos dois); o trecho azul continua com tinta escura fixa. */
+    --idade-menor:  #0081f4;
+    --idade-maior:  #30363d;
+    --resc-bar:     #d26110;
+
+    /* Alertas de vencimento — duas famílias de cor distintas por grupo
+       (âmbar = preventivo/"a vencer", vermelho = já vencido), com 3 tons
+       cada (mais forte = janela mais urgente: 30 dias) — não reutiliza
+       --status-critical/serious/warning porque aqui a cor codifica GRUPO
+       + urgência, não o mesmo significado usado nos cards de situação. */
+    --venc-a30:      #ba5508;
+    --venc-a30-wash: rgba(186,85,8,0.14);
+    --venc-a60:      #c2720a;
+    --venc-a60-wash: rgba(194,114,10,0.13);
+    --venc-a90:      #a0740d;
+    --venc-a90-wash: rgba(160,116,13,0.14);
+    --venc-v30:      #aa2218;
+    --venc-v30-wash: rgba(170,34,24,0.10);
+    --venc-v60:      #b12531;
+    --venc-v60-wash: rgba(177,37,49,0.11);
+    --venc-v90:      #ae324b;
+    --venc-v90-wash: rgba(174,50,75,0.12);
+
+    /* Gradiente de urgência da coluna "dias restantes"/"vencido há" —
+       quanto mais perto do vencimento, mais quente a cor; já vencido usa
+       um tom à parte (roxo) pra não ser confundido com "vence em poucos
+       dias". Valores ajustados por tema pra manter contraste AA (4.5:1)
+       em texto — os tons "vívidos" originais só passam no fundo escuro. */
+    --dias-urgente:    #d1242f;
+    --dias-atencao:    #bc4c00;
+    --dias-preventivo: #9a6700;
+    --dias-tranquilo:  #1a7f37;
+    --dias-vencido:    #8250df;
+
+    --shadow-card: 0 1px 2px rgba(11,11,11,0.04), 0 1px 1px rgba(11,11,11,0.03);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page-bg:        #0d0d0d;
+      --surface-1:      #1a1a19;
+      --surface-2:      #232320;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --baseline:       #383835;
+      --border:         rgba(255,255,255,0.10);
+      --border-strong:  rgba(255,255,255,0.16);
+
+      --accent:         #3987e5;
+      --accent-wash:    rgba(57,135,229,0.14);
+      --accent-ring:    rgba(57,135,229,0.40);
+      --tab-active-bg:  #1c71d7;
+
+      --idade-menor:  #79c0ff;
+      --idade-maior:  #606870;
+      --resc-bar:     #f0883e;
+
+      --status-good:      #0ca30c;
+      --status-good-wash: rgba(12,163,12,0.16);
+      --status-warning:      #fab219;
+      --status-warning-wash: rgba(250,178,25,0.16);
+      --status-serious:      #ec835a;
+      --status-serious-wash: rgba(236,131,90,0.16);
+      --status-critical:      #d03b3b;
+      --status-critical-wash: rgba(208,59,59,0.18);
+      --status-neutral:      #9d9c97;
+      --status-neutral-wash: rgba(157,156,151,0.14);
+      --status-pending:      #9085e9;
+      --status-pending-wash: rgba(144,133,233,0.16);
+
+      --venc-a30:      #eea23c;
+      --venc-a30-wash: rgba(238,162,60,0.20);
+      --venc-a60:      #f0b562;
+      --venc-a60-wash: rgba(240,181,98,0.18);
+      --venc-a90:      #f3cb8c;
+      --venc-a90-wash: rgba(243,203,140,0.16);
+      --venc-v30:      #ef776d;
+      --venc-v30-wash: rgba(239,119,109,0.20);
+      --venc-v60:      #ec938b;
+      --venc-v60-wash: rgba(236,147,139,0.18);
+      --venc-v90:      #eeb0aa;
+      --venc-v90-wash: rgba(238,176,170,0.16);
+
+      --dias-urgente:    #f85149;
+      --dias-atencao:    #f0883e;
+      --dias-preventivo: #d29922;
+      --dias-tranquilo:  #3fb950;
+      --dias-vencido:    #a371f7;
+
+      --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.2);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page-bg:        #0d0d0d;
+    --surface-1:      #1a1a19;
+    --surface-2:      #232320;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+    --border-strong:  rgba(255,255,255,0.16);
+
+    --accent:         #3987e5;
+    --accent-wash:    rgba(57,135,229,0.14);
+    --accent-ring:    rgba(57,135,229,0.40);
+    --tab-active-bg:  #1c71d7;
+
+    --idade-menor:  #79c0ff;
+    --idade-maior:  #606870;
+    --resc-bar:     #f0883e;
+
+    --status-good:      #0ca30c;
+    --status-good-wash: rgba(12,163,12,0.16);
+    --status-warning:      #fab219;
+    --status-warning-wash: rgba(250,178,25,0.16);
+    --status-serious:      #ec835a;
+    --status-serious-wash: rgba(236,131,90,0.16);
+    --status-critical:      #e66767;
+    --status-critical-wash: rgba(230,103,103,0.16);
+    --status-neutral:      #9d9c97;
+    --status-neutral-wash: rgba(157,156,151,0.14);
+
+    --venc-a30:      #eea23c;
+    --venc-a30-wash: rgba(238,162,60,0.20);
+    --venc-a60:      #f0b562;
+    --venc-a60-wash: rgba(240,181,98,0.18);
+    --venc-a90:      #f3cb8c;
+    --venc-a90-wash: rgba(243,203,140,0.16);
+    --venc-v30:      #ef776d;
+    --venc-v30-wash: rgba(239,119,109,0.20);
+    --venc-v60:      #ec938b;
+    --venc-v60-wash: rgba(236,147,139,0.18);
+    --venc-v90:      #eeb0aa;
+    --venc-v90-wash: rgba(238,176,170,0.16);
+
+    --dias-urgente:    #f85149;
+    --dias-atencao:    #f0883e;
+    --dias-preventivo: #d29922;
+    --dias-tranquilo:  #3fb950;
+    --dias-vencido:    #a371f7;
+
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 1px 1px rgba(0,0,0,0.2);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--page-bg);
+    color: var(--text-primary);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  h1, h2, h3 {
+    font-family: "Archivo", system-ui, sans-serif;
+    text-wrap: balance;
+    margin: 0;
+  }
+  ::selection { background: var(--accent-wash); }
+  a { color: var(--accent); }
+
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 24px 64px;
+  }
+
+  /* ---------- Header ---------- */
+  .topbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 24px;
+    padding-bottom: 14px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 18px; min-width: 0; }
+  .topbar-brand > div { min-width: 0; }
+  .brand-logo {
+    height: 52px; width: auto; flex-shrink: 0; display: block;
+  }
+  .brand-logo-plate {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 10px 16px;
+    display: flex; align-items: center;
+    box-shadow: 0 1px 2px rgba(15,30,60,0.05), 0 6px 18px rgba(15,30,60,0.10);
+    flex-shrink: 0;
+  }
+  .brand-divider {
+    width: 1px; align-self: stretch; background: var(--border); flex-shrink: 0; margin: 4px 0;
+  }
+  /* Mais destaque pro nome da marca (24/08/2026, a pedido do Hudson) — cor
+     de acento em vez de neutro (mesmo tom já usado em links/botões no
+     resto do painel, contraste já validado) + mesmo tamanho do H1 abaixo
+     (ajuste seguinte, mesmo pedido: "deixe a fonte do mesmo tamanho do
+     texto abaixo"). */
+  .brand-name {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 4px;
+  }
+  .topbar h1 { font-size: 25px; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; color: var(--accent); }
+  .topbar-meta {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+    font-size: 12.5px; color: var(--text-muted);
+  }
+  .topbar-meta-top { display: flex; align-items: center; gap: 8px; }
+  .badge-proto {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 100px;
+    background: var(--accent-wash); color: var(--accent);
+    font-weight: 600; font-size: 11.5px; letter-spacing: 0.02em;
+    border: 1px solid var(--accent-ring);
+  }
+
+  /* ---------- Ícone de informação do protótipo ---------- */
+  .info-wrap { position: relative; }
+  .info-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; padding: 0;
+    border: 1px solid var(--border-strong); background: var(--surface-2);
+    color: var(--text-secondary); font-size: 14px; line-height: 1; cursor: pointer;
+    transition: all .12s ease;
+  }
+  .info-btn:hover, .info-wrap.open .info-btn {
+    border-color: var(--accent-ring); color: var(--accent); background: var(--accent-wash);
+  }
+  .info-btn:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+  .info-tooltip {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    width: 240px; max-width: calc(100vw - 48px);
+    background: var(--surface-1); border: 1px solid var(--border-strong);
+    border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+    padding: 12px 14px;
+    opacity: 0; visibility: hidden; transform: translateY(-4px);
+    transition: opacity .12s ease, transform .12s ease, visibility 0s linear .12s;
+    z-index: 20; text-align: left;
+  }
+  .info-wrap:hover .info-tooltip,
+  .info-wrap.open .info-tooltip {
+    opacity: 1; visibility: visible; transform: translateY(0);
+    transition: opacity .12s ease, transform .12s ease;
+  }
+  .info-title { font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px; }
+  .info-tooltip ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .info-tooltip li {
+    font-size: 12px; color: var(--text-secondary); line-height: 1.4;
+    padding-left: 13px; position: relative;
+  }
+  .info-tooltip li::before {
+    content: ''; position: absolute; left: 0; top: 6px;
+    width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+  }
+
+  /* ---------- Section headings ---------- */
+  .section { margin-top: 34px; }
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .section-head h2 { font-size: 15px; font-weight: 700; }
+  /* min-width:0 + flex:1 1 auto (24/08/2026): protege qualquer hint dentro
+     do section-head de reivindicar a largura total do texto sem quebrar
+     linha (chart-card-actions tem flex-shrink:0, que ignora a quebra do
+     filho ao calcular o tamanho preferido) — evita o botão vazar da linha
+     se um hint desse tamanho aparecer de novo. Nos hints curtos de hoje
+     (Vencimentos, Qualidade dos dados, Consulta de contratos) não muda nada. */
+  .section-head .hint { font-size: 12.5px; color: var(--text-muted); min-width: 0; flex: 1 1 auto; }
+  /* "Limite de idade" (24/08/2026, 2ª correção): o hint dele é tão mais
+     longo que o dos outros (quase o dobro) que, mesmo sem vazar, ele SEMPRE
+     empurrava o chart-card-actions inteiro pra uma linha abaixo do h2 — só
+     nesse card o botão Excel ficava numa linha diferente da dos outros
+     gráficos. Solução: tirar o hint de dentro do chart-card-actions, deixar
+     só h2 + botão no section-head (aí sim sempre na mesma linha, igual aos
+     demais) e o hint vira um parágrafo próprio logo abaixo. */
+  .section-hint-below {
+    font-size: 12.5px; color: var(--text-muted); margin: -6px 0 12px; line-height: 1.45;
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ---------- KPI row ---------- */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: 1.3fr repeat(5, 1fr);
+    gap: 10px;
+  }
+  .kpi-hero {
+    padding: 18px 20px;
+    display: flex; flex-direction: column; justify-content: center;
+    background: var(--surface-1);
+  }
+  .kpi-hero .label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .kpi-hero .value {
+    font-family: "Archivo", sans-serif; font-weight: 800;
+    font-size: 42px; line-height: 1; margin-top: 6px; letter-spacing: -0.02em;
+  }
+  .kpi-hero .foot { margin-top: 8px; font-size: 12px; color: var(--text-muted); }
+  .stat-tile {
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat-tile .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--tile-color, var(--accent));
+    margin-bottom: 2px;
+  }
+  .stat-tile .label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .stat-tile .value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ---------- Two/three column grids ---------- */
+  .grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 860px) {
+    .kpi-row { grid-template-columns: 1fr 1fr 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .topbar { grid-template-columns: 1fr; }
+    .topbar-meta { align-items: flex-start; }
+  }
+
+  .chart-card { padding: 18px 20px 14px; }
+  .chart-card h3 { font-size: 13.5px; font-weight: 600; }
+  .chart-card .chart-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .chart-body { margin-top: 14px; position: relative; }
+  .chart-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .chart-card-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  /* Dentro do section-head (não do chart-card-head por gráfico), o
+     chart-card-actions precisa poder encolher — senão, com um hint longo
+     como o de "Limite de idade", ele reivindica a largura total do texto
+     sem quebrar (flex-shrink:0 ignora a quebra de linha do filho ao
+     calcular o tamanho preferido) e o botão Excel vaza pra fora da linha. */
+  .section-head .chart-card-actions { flex-shrink: 1; min-width: 0; }
+  .year-nav { display: flex; align-items: center; gap: 6px; margin-right: 12px; }
+  .page-select {
+    font-family: "Archivo", sans-serif; font-weight: 700; font-size: 13.5px;
+    color: var(--text-primary); background: var(--surface-2);
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    padding: 3px 6px; cursor: pointer; text-align: center;
+  }
+  .page-select:hover { border-color: var(--accent-ring); }
+  .page-select:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+  .page-total { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+  .icon-btn {
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--text-secondary);
+    background: var(--surface-2); border: 1px solid var(--border-strong);
+    border-radius: 6px; width: 26px; height: 26px; line-height: 1; cursor: pointer; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all .12s ease;
+  }
+  .icon-btn:hover:not(:disabled) { border-color: var(--accent-ring); color: var(--accent); }
+  .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  /* Setas maiores pra paginação de "Empresas por arco ocupacional" (23/08/2026) */
+  .icon-btn.lg { width: 34px; height: 34px; font-size: 19px; border-radius: 8px; }
+  .export-btn.small { padding: 5px 10px; font-size: 12px; flex-shrink: 0; }
+  .year-label {
+    font-family: "Archivo", sans-serif; font-weight: 700; font-size: 13.5px;
+    color: var(--text-primary); min-width: 38px; text-align: center;
+  }
+  .year-count { font-size: 11px; color: var(--text-muted); margin: 0 2px 0 -6px; white-space: nowrap; }
+  .novos-indicator { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .novos-indicator .novos-value {
+    font-family: "Archivo", sans-serif; font-weight: 800; font-size: 32px;
+    line-height: 1; letter-spacing: -0.02em; color: var(--text-primary);
+  }
+  .novos-indicator .novos-label { font-size: 12.5px; color: var(--text-secondary); }
+  .novos-indicator .novos-delta { font-size: 12px; font-weight: 600; }
+  .novos-indicator .novos-delta.good { color: var(--status-good); }
+  .novos-indicator .novos-delta.critical { color: var(--status-critical); }
+  .novos-bar { fill: var(--accent); }
+
+  /* ---------- Line chart ---------- */
+  .axis-label { fill: var(--text-muted); font-size: 10px; font-family: "IBM Plex Sans", sans-serif; }
+  .gridline { stroke: var(--gridline); stroke-width: 1; opacity: 0.15; }
+  .bar-value-label {
+    fill: var(--text-secondary); font-size: 11px; font-weight: 600;
+    font-family: "IBM Plex Sans", sans-serif; font-variant-numeric: tabular-nums;
+  }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+  .line-path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .area-path { fill: var(--accent); opacity: 0.10; }
+  .hover-dot { fill: var(--accent); stroke: var(--surface-1); stroke-width: 2; }
+  .hover-line { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 2 3; }
+  .end-label { font-weight: 600; fill: var(--text-primary); font-size: 11.5px; }
+
+  .tooltip {
+    position: absolute; pointer-events: none;
+    background: var(--surface-1); border: 1px solid var(--border-strong);
+    border-radius: 8px; padding: 7px 10px; font-size: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    transform: translate(-50%, -110%);
+    white-space: nowrap; opacity: 0; transition: opacity .1s ease;
+    z-index: 5;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip .t-label { color: var(--text-muted); font-size: 11px; }
+  .tooltip .t-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ---------- Bar rows ---------- */
+  .bar-list { display: flex; flex-direction: column; gap: 9px; }
+  /* 23/08/2026: rótulo (%, nome curto, contagem) passou pra DENTRO de cada
+     segmento — antes ficava só numa legenda abaixo, ocupando espaço vertical
+     à toa. Texto em tinta escura fixa (não var(--text-primary), que vira
+     branco no tema escuro — os preenchimentos #79c0ff/#8b949e continuam
+     claros o bastante nos dois temas pra precisar sempre de texto escuro:
+     branco neles dava só 1,9–3,1:1 de contraste, abaixo do mínimo). */
+  /* "Maiores e menores de idade" virou barra empilhada horizontal (24/08/2026,
+     2ª troca) — a rosca ocupava altura grande no card e a legenda ao lado
+     repetia info que já dá pra ler direto nos rótulos dentro da barra.
+     3ª rodada (mesmo dia): virou UMA faixa contínua — o border-right grosso
+     que separava os trechos lia como "dois botões colados", e trocado por
+     var(--border-strong) (hairline já usado em cards/inputs, translúcido nos
+     dois temas — 1px sólido fixo tipo #21262d sumia no escuro contra o cinza
+     escuro do próprio trecho). Rótulo de categoria (nome) desceu pra uma
+     linha própria abaixo da barra, alinhado por trecho; total ganhou peso.
+     Cores fixas pedidas por Hudson pro trecho cinza (#58a6ff azul / #30363d
+     cinza escuro) reabriram um problema sério ao testar contraste ENTRE os
+     dois trechos (não só contra o fundo): o cinza médio antigo (--idade-maior
+     #7b8590 claro / #8b949e escuro) tinha só 1,0–1,6:1 de contraste contra o
+     azul — quase a mesma luminosidade — então, sem a linha divisória grossa
+     de antes, os dois trechos iam se fundir numa faixa única sem separação
+     nenhuma. #30363d resolve isso no tema claro (3,17:1 contra o azul, ainda
+     ≥3:1 contra o card) e virou o novo --idade-maior claro. No escuro esse
+     mesmo tom quase some contra o fundo quase-preto (~1,4:1), então o
+     --idade-maior escuro virou #606870 — melhor equilíbrio achado entre
+     contraste contra o azul claro e contra o fundo escuro (~2,9-3,1:1 nos
+     dois). Como os dois trechos passaram a ter tons bem diferentes, o texto
+     interno também virou por-trecho: tinta escura fixa no azul (branco não
+     fecha 4,5:1 nele), branco fixo no cinza (tinta escura não fecha 4,5:1
+     nele — são fixos porque nenhum dos dois pares passa nos dois temas com
+     var(--text-primary), que inverte de cor entre claro/escuro). */
+  .idade-legal-stack { display: flex; flex-direction: column; gap: 6px; }
+  .idade-legal-track {
+    display: flex; height: 50px; border-radius: 12px; overflow: hidden;
+    background: var(--surface-2);
+  }
+  .idade-legal-seg {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 0; padding: 0 4px;
+  }
+  .idade-legal-seg.menor { background: var(--idade-menor); border-right: 1px solid var(--border-strong); }
+  .idade-legal-seg.maior { background: var(--idade-maior); }
+  .idade-legal-seg .seg-value {
+    font-family: "Archivo", sans-serif; font-weight: 800; font-size: 17px; line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+  .idade-legal-seg .seg-pct { font-size: 11.5px; font-weight: 600; opacity: 0.82; }
+  .idade-legal-seg.menor .seg-value, .idade-legal-seg.menor .seg-pct { color: #0b0b0b; }
+  .idade-legal-seg.maior .seg-value, .idade-legal-seg.maior .seg-pct { color: #ffffff; }
+  .idade-legal-catlabels { display: flex; }
+  .idade-legal-catlabels span {
+    text-align: center; font-size: 12px; color: var(--text-muted); min-width: 0; padding: 0 4px;
+  }
+  .idade-legal-total { text-align: center; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-top: 2px; }
+  .idade-legal-alert {
+    display: flex; align-items: flex-start; gap: 8px; padding: 9px 12px;
+    background: var(--status-warning-wash); border: 1px solid var(--dias-atencao);
+    border-radius: 8px; font-size: 12.5px; color: var(--text-primary); line-height: 1.4;
+  }
+  .idade-legal-alert .icon { flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+  .idade-legal-alert strong { color: var(--dias-atencao); }
+  @media (max-width: 480px) {
+    .idade-legal-seg .seg-value { font-size: 15px; }
+    .idade-legal-seg .seg-pct { font-size: 10.5px; }
+    .idade-legal-catlabels span { font-size: 11px; }
+  }
+  .bar-row { display: grid; grid-template-columns: 148px 1fr 56px; align-items: center; gap: 10px; }
+  .bar-row .name {
+    font-size: 12.5px; color: var(--text-secondary); position: relative;
+    display: block; min-width: 0;
+  }
+  /* truncação mora no span interno (não em .name) de propósito: .name precisa
+     ficar SEM overflow:hidden pra o tooltip customizado (#funcaoEmpBars, ver
+     abaixo) não ser cortado — um ::after posicionado fora dos limites de um
+     elemento com overflow:hidden é cortado junto, mesmo sendo position:absolute. */
+  .bar-row .name .name-text {
+    display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .bar-track { position: relative; height: 20px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--accent); }
+  .bar-row .val { font-size: 12.5px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  #faixaEtariaBars.bar-list .bar-row { grid-template-columns: 148px 1fr 92px; }
+  #idadeRescisaoBars.bar-list .bar-row { grid-template-columns: 148px 1fr 92px; }
+  /* funcaoEmpBars (Empresas por arco ocupacional): coluna de nome alargada de
+     148px pra 230px em 23/08/2026 — vários nomes de empresa (ex.: "ASTEMO
+     MANAUS PODER..." ) cortavam nos 148px originais. */
+  #funcaoEmpBars.bar-list .bar-row { grid-template-columns: 230px 1fr 92px; }
+  #funcaoBars.bar-list .bar-row { grid-template-columns: 148px 1fr 92px; }
+  #empresaBars.bar-list .bar-row { grid-template-columns: 340px 1fr 92px; }
+  .bar-row.top .name, .bar-row.top .val { font-weight: 700; color: var(--text-primary); }
+  .bar-row .callout {
+    grid-column: 1 / -1; margin-top: -3px;
+    font-size: 11.5px; color: var(--accent); font-weight: 500;
+  }
+  /* Realce de linha (23/08/2026) — usado em "18-19 anos" nas duas seções que
+     mostram esse padrão (Faixa etária + Rescisão antecipada). Uma borda na
+     própria barra ficava pouco visível quando o preenchimento já era laranja
+     (Rescisão) — a cor do anel quase sumia dentro da própria barra. Faixa
+     lateral colorida ao lado do nome funciona nas duas cores de barra e não
+     depende só de cor (o nome também fica em negrito). */
+  .bar-row.hl { border-left: 3px solid var(--status-warning); padding-left: 9px; margin-left: -12px; }
+  .bar-row.hl .name { font-weight: 700; color: var(--text-primary); }
+
+  /* Rescisão antecipada usa laranja (não var(--accent)) pra diferenciar
+     visualmente de "Faixa etária" — é um indicador de alerta/risco, não de
+     perfil demográfico. */
+  #idadeRescisaoBars .bar-fill { background: var(--resc-bar); }
+
+  /* Empresas com mais contratos: nome quase nunca corta (coluna larga acima +
+     title="" nativo cobre o raro nome de 60+ caracteres); pista da barra com
+     borda visível pra ficar claro que ela é uma faixa de 0-100%, não um vazio;
+     linha líder com destaque de risco de concentração. Mesmo padrão de borda
+     aplicado a #funcaoEmpBars (23/08/2026), pra ficar visualmente igual. */
+  #empresaBars .bar-track, #funcaoEmpBars .bar-track { border: 1px solid var(--border); }
+
+  /* Tooltip customizado pro nome truncado em #funcaoEmpBars — mais visível que
+     o title="" nativo do navegador (que demora ~1s e é discreto). Lê o mesmo
+     atributo title já presente no span, sem precisar duplicar o dado. */
+  #funcaoEmpBars .bar-row .name { position: relative; cursor: default; }
+  #funcaoEmpBars .bar-row .name:hover::after {
+    content: attr(title);
+    position: absolute; left: 0; bottom: 100%; margin-bottom: 7px;
+    background: var(--surface-1); color: var(--text-primary);
+    border: 1px solid var(--border-strong); border-radius: 7px;
+    padding: 6px 10px; font-size: 12px; font-weight: 500;
+    white-space: normal; width: max-content; max-width: 280px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 20;
+    pointer-events: none;
+  }
+  /* 23/08/2026: mesmo destaque de concentração aplicado também a #funcaoBars
+     (Arco ocupacional), a pedido do Hudson — voltou a ser barra horizontal
+     em vez do Pareto vertical, que ficou poluído e destoava do resto do
+     painel. */
+  #empresaBars .bar-row.top, #funcaoBars .bar-row.top {
+    background: var(--accent-wash); border-radius: 8px;
+    padding: 6px 8px; margin: -6px -8px 0;
+  }
+  #empresaBars .bar-row.top .callout, #funcaoBars .bar-row.top .callout {
+    display: flex; align-items: center; gap: 6px;
+    margin: 6px -8px -6px; padding: 7px 10px;
+    background: var(--status-warning-wash); border-top: 1px solid var(--border);
+    border-radius: 0 0 8px 8px;
+    color: var(--text-secondary); font-weight: 600;
+  }
+  #empresaBars .bar-row.top .callout::before, #funcaoBars .bar-row.top .callout::before { content: '⚠'; color: var(--status-warning); font-weight: 700; }
+
+  /* ---------- Vencimento de contratos por arco ocupacional ----------
+     Reescrito em 31/08/2026 (2ª versão, pedido do Hudson: "não gostei desse
+     gráfico... quero poder selecionar o arco ocupacional e ter a lista dos
+     próximos vencimentos"). A 1ª versão (barra empilhada por função, 3
+     níveis de urgência) foi substituída por um explorador: abas de função
+     (mesmo componente .funcao-tab já usado em "Empresas por arco
+     ocupacional", 3.5) + tabela abaixo com a lista de contratos daquela
+     função (mesmas colunas/cores de "Alertas de vencimento", 3.11 —
+     diasSeverityColor, não mais os 3 baldes fixos da barra). Só entram nas
+     abas funções com pelo menos 1 contrato na janela de alerta (90 dias ou
+     já vencido) — mesmo filtro de antes, ver vencimentoArcoData(). */
+  #vencArcoTabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .venc-arco-table-note { font-size: 12.5px; color: var(--text-muted); margin-top: 8px; }
+  /* Banner do achado do topo — sempre visível, independente da aba
+     selecionada (mostra o pior caso do painel inteiro, não só da aba
+     aberta), com ação recomendada. */
+  .venc-arco-alert-banner {
+    display: none; align-items: flex-start; gap: 9px;
+    background: var(--status-critical-wash); border: 1px solid var(--dias-urgente);
+    border-radius: 10px; padding: 10px 12px; margin: 0 0 14px;
+    font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;
+  }
+  .venc-arco-alert-banner .icon { font-size: 15px; flex: none; line-height: 1.4; }
+  .venc-arco-alert-banner b { color: var(--text-primary); }
+  .venc-arco-alert-banner .rec { display: block; margin-top: 4px; color: var(--text-muted); }
+
+  /* ---------- Variação de empresas (crescendo/diminuindo) ---------- */
+  .variacao-controls {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    gap: 12px; margin-bottom: 10px;
+  }
+  .variacao-period-pickers { display: flex; align-items: center; gap: 8px; }
+  .variacao-period-pickers select { padding: 6px 10px; font-size: 12.5px; }
+  .variacao-period-pickers .vs { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+  .variacao-caveat {
+    font-size: 11.5px; color: var(--text-muted); background: var(--surface-2);
+    border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; line-height: 1.5;
+  }
+  /* alerta de limitação de dado — precisa ser visto antes de tirar conclusão errada,
+     por isso o tratamento é bem mais forte que o .variacao-caveat padrão */
+  .variacao-alert {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;
+    background: var(--status-warning-wash);
+    border: 1px solid var(--status-warning);
+    border-left: 4px solid var(--status-warning);
+    border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;
+  }
+  .variacao-alert .icon { font-size: 16px; line-height: 1.3; flex-shrink: 0; }
+  .variacao-alert b { color: var(--text-primary); font-weight: 700; }
+
+  /* Caixa colapsável "Como interpretar este gráfico" (23/08/2026) — mesma
+     linguagem visual do .variacao-alert (fundo/borda de aviso), mas fechada
+     por padrão: o aviso continua sempre acessível (inclusive em celular, ao
+     contrário de um tooltip que só aparece no hover), sem ocupar o espaço
+     de um parágrafo fixo o tempo todo. */
+  .interpret-alert {
+    background: var(--status-warning-wash);
+    border: 1px solid var(--status-warning);
+    border-left: 4px solid var(--status-warning);
+    border-radius: 8px; margin-bottom: 16px; overflow: hidden;
+  }
+  .interpret-alert summary {
+    display: flex; align-items: center; gap: 9px;
+    padding: 10px 14px; cursor: pointer; user-select: none;
+    font-size: 12.5px; font-weight: 700; color: var(--text-primary);
+    list-style: none;
+  }
+  .interpret-alert summary::-webkit-details-marker { display: none; }
+  .interpret-alert summary::marker { content: ''; }
+  .interpret-alert summary .icon { font-size: 15px; line-height: 1; flex-shrink: 0; }
+  .interpret-alert summary .chevron {
+    margin-left: auto; font-size: 10px; color: var(--text-muted);
+    transition: transform .15s ease; flex-shrink: 0;
+  }
+  .interpret-alert[open] summary .chevron { transform: rotate(180deg); }
+  .interpret-alert summary:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: -2px; }
+  .interpret-alert .interpret-body {
+    padding: 0 14px 12px 14px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;
+  }
+
+  .idade1819-insight { font-size: 12px; color: var(--text-secondary); margin: -2px 0 14px; }
+  .idade1819-insight b { color: var(--text-primary); font-weight: 700; }
+
+  /* cada coluna vira um card com fronteira visível — como o grid estica os
+     itens pra mesma altura por padrão, as duas colunas ficam sempre com
+     altura igual mesmo quando uma tem muito menos empresas que a outra,
+     em vez de uma parecer "flutuando" no vazio ao lado da outra */
+  .variacao-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .variacao-col {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .variacao-col-title { font-size: 12px; font-weight: 600; margin: 0 0 10px; }
+  .variacao-col-title.good { color: var(--status-good); }
+  .variacao-col-title.critical { color: var(--status-critical); }
+  .variacao-empty { font-size: 12.5px; color: var(--text-muted); font-style: italic; }
+  /* valor colado na ponta da barra, em vez de numa coluna fixa longe dela */
+  .bar-row.variacao-row { grid-template-columns: 148px 1fr; }
+  .bar-row.variacao-row .bar-track { overflow: visible; }
+  .variacao-val {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .variacao-badges { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .variacao-badge-group { margin-bottom: 14px; }
+  .variacao-badge-group:last-child { margin-bottom: 0; }
+  /* divisor sutil entre "Novas empresas ativas" e "Saíram da base", só quando
+     os dois blocos aparecem juntos */
+  .variacao-badge-group:not(:last-child) {
+    padding-bottom: 14px; border-bottom: 1px dashed var(--border);
+  }
+  .variacao-badge-label {
+    display: block; font-size: 11.5px; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: 8px;
+  }
+  .variacao-badge-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .variacao-chip {
+    font-size: 12px; padding: 5px 12px; border-radius: 100px; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .variacao-chip.good { background: var(--status-good-wash); color: var(--text-secondary); }
+  .variacao-chip.critical { background: var(--status-critical-wash); color: var(--text-secondary); }
+  .variacao-chip b { font-variant-numeric: tabular-nums; }
+  .variacao-chip.good b { color: var(--status-good); }
+  .variacao-chip.critical b { color: var(--status-critical); }
+  @media (max-width: 860px) {
+    .variacao-grid { grid-template-columns: 1fr; gap: 14px; }
+  }
+
+
+  /* ---------- Status legend list ---------- */
+  .status-list { display: flex; flex-direction: column; gap: 8px; }
+  .status-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 8px;
+    background: var(--surface-2);
+  }
+  .status-row .swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; background: var(--c); }
+  .status-row .name { font-size: 12.5px; flex: 1; color: var(--text-secondary); }
+  .status-row .num { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .status-row .pct { font-size: 11px; color: var(--text-muted); width: 40px; text-align: right; }
+
+  /* ---------- Alert stat row ---------- */
+  .alert-group-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--text-muted); margin: 0 0 8px 2px;
+  }
+  .alert-group-label .n { font-variant-numeric: tabular-nums; color: var(--text-secondary); font-weight: 700; text-transform: none; letter-spacing: normal; }
+  .alert-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .alert-row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .alert-tile {
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+    border-left: 3px solid var(--a-color);
+    cursor: pointer; text-align: left; font-family: inherit; width: 100%;
+    transition: border-color .12s ease, background .12s ease, box-shadow .12s ease;
+  }
+  .alert-tile:hover { background: var(--surface-2); box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .alert-tile.active-filter { background: var(--a-wash, var(--accent-wash)); }
+  .alert-tile .top-row { display: flex; align-items: center; gap: 6px; }
+  .alert-tile .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--a-color); flex-shrink: 0; }
+  .alert-tile .label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .alert-tile .value-row { display: flex; align-items: baseline; gap: 7px; }
+  .alert-tile .value { font-size: 26px; font-weight: 800; font-family: "Archivo", sans-serif; color: var(--a-color); }
+  .alert-tile .pct { font-size: 11.5px; color: var(--text-muted); }
+  /* Cards de alerta legal/compliance (24/08/2026) — os 4 cards de "Limite de
+     idade" usam fundo tingido permanente (não só no active-filter) + ícone,
+     não só a borda esquerda dos alert-tile comuns. O active-filter ganha um
+     anel por cima do fundo já tingido, já que o background sozinho não muda
+     nada aqui (cada card já tem sua própria wash fixa).
+     3ª rodada (24/08/2026): escada de urgência pedida pelo Hudson — laranja
+     (total, alerta preventivo) → vermelho (vencido, emergência real) →
+     amarelo (90 dias) → verde (180 dias, baixa urgência), sem duas cores
+     iguais lado a lado. As cores exatas que ele pediu (#f85149/#f0883e/
+     #d29922/#3fb950) são literalmente os valores de tema escuro dos tokens
+     --dias-urgente/--dias-atencao/--dias-preventivo/--dias-tranquilo, já
+     usados nas tabelas de vencimento e em "Limite de idade" 90/180 — reusei
+     os tokens (que já têm um tom claro correspondente, testado) em vez de
+     fixar os hex, pelo mesmo motivo de sempre: hex fixo pensado pro tema
+     escuro perde contraste no claro. Wash de cada cor emprestada de um token
+     já existente da mesma família (--venc-a30-wash pro laranja,
+     --status-critical-wash pro vermelho, --status-warning-wash pro amarelo
+     — já usada assim em .anomaly-tile.warn —, --status-good-wash pro verde). */
+  .alert-tile .tile-icon { font-size: 13px; margin-left: auto; flex-shrink: 0; }
+  .alert-tile.alert-tile-critical { background: var(--a-wash); }
+  .alert-tile.alert-tile-critical:hover { filter: brightness(0.96); }
+  .alert-tile.alert-tile-critical.active-filter { box-shadow: 0 0 0 2px var(--a-color) inset; }
+  td.dias-cell { font-variant-numeric: tabular-nums; font-weight: 600; }
+  /* "—" de dias-a-vencer (24/08/2026) — mais discreto: sem negrito (herdava
+     o font-weight:600 da célula, ficando pesado igual um número de
+     verdade) e centralizado só ele (as linhas com valor real continuam
+     alinhadas à esquerda, como o resto da coluna). */
+  td.dias-cell .no-data { display: block; text-align: center; font-weight: 400; color: var(--text-muted); opacity: 0.75; }
+  .venc-table-note {
+    margin-top: 8px; font-size: 11.5px; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  }
+  .venc-table-note:empty { display: none; }
+  .venc-table-note .reset-link { font-size: 11.5px; flex-shrink: 0; }
+
+  /* ---------- Table ---------- */
+  .table-toolbar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  /* Linha só dos chips de situação (24/08/2026) — separada da linha de
+     empresa/função/busca de baixo, com o contador logo depois dos chips
+     (perto do filtro, como pedido) em vez de lá na ponta com o botão Excel. */
+  .table-toolbar.toolbar-top { margin-bottom: 8px; }
+  .chip-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chart-card-head + .chip-group { margin-top: 14px; }
+  .chip {
+    padding: 6px 11px; border-radius: 100px; font-size: 12px; font-weight: 500;
+    border: 1px solid var(--border-strong); background: var(--surface-1); color: var(--text-secondary);
+    cursor: pointer; user-select: none; transition: all .12s ease;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
+  .chip.on { background: var(--accent-wash); border-color: var(--accent-ring); color: var(--text-primary); }
+  .chip:hover { border-color: var(--border-strong); }
+
+  /* Tabs de "Empresas por arco ocupacional" — maiores e com mais contraste
+     que os chips de filtro padrão, porque aqui cada aba troca o conteúdo
+     inteiro da tabela abaixo (não é um filtro multi-seleção como os chips
+     de situação). */
+  #funcaoEmpTabs { display: flex; gap: 10px; flex-wrap: wrap; }
+  .funcao-tab {
+    padding: 10px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--surface-1); color: var(--text-muted);
+    cursor: pointer; user-select: none; transition: all .12s ease;
+    display: inline-flex; align-items: center; gap: 6px; font-family: inherit;
+  }
+  .funcao-tab .count { font-variant-numeric: tabular-nums; opacity: 0.85; }
+  .funcao-tab:hover { border-color: var(--border-strong); color: var(--text-secondary); }
+  .funcao-tab.on {
+    background: var(--tab-active-bg); border-color: var(--tab-active-bg);
+    color: #fff; font-weight: 700;
+  }
+  .funcao-tab:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+
+  .input, select.input {
+    font: inherit; padding: 7px 11px; border-radius: 8px;
+    border: 1px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary);
+  }
+  .input:focus, select.input:focus, .chip:focus-visible {
+    outline: 2px solid var(--accent-ring); outline-offset: 1px;
+  }
+  #search { width: 320px; }
+  #empresaFilter, #funcaoFilter { max-width: 200px; }
+  .toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .result-count { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .page-size-label {
+    font-size: 12px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .page-size-label select { padding: 5px 8px; font-size: 12px; }
+  .reset-link {
+    font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer;
+    font-family: inherit; padding: 0;
+  }
+  .export-btn {
+    font: inherit; font-size: 12.5px; font-weight: 600; color: var(--accent);
+    background: var(--accent-wash); border: 1px solid var(--accent-ring);
+    border-radius: 8px; padding: 7px 12px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .export-btn:hover { filter: brightness(0.97); }
+  .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px);
+    background: var(--text-primary); color: var(--page-bg);
+    padding: 10px 18px; border-radius: 9px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Botão "voltar ao topo" (24/08/2026) — FAB fixo, some/aparece com o
+     scroll. Cor de fundo pedida pelo Hudson (#30363d) é ótima no tema claro
+     (11,6:1 contra a página) mas quase some no escuro (1,6:1 contra o
+     --page-bg escuro #0d0d0d, quase preto também) — mesmo caso de sempre,
+     então reaproveitei var(--idade-maior) direto: é literalmente o mesmo
+     #30363d no claro, com #606870 já validado (3,4:1) pro escuro — nenhuma
+     cor nova. 1ª versão tinha o fundo do hover perdendo pro override de tema
+     (mesma classe + seletor de tema é mais específico que só :hover) —
+     corrigido usando a variável em vez de fixar "background" 2x por tema.
+     Ícone branco (#e6edf3, como pedido) em repouso; no hover o fundo vira
+     azul (#58a6ff, como pedido) e o ícone troca pra tinta escura, porque
+     branco nesse azul não fecha 4,5:1 (só 2,1:1). zIndex 40 fica abaixo do
+     toast (50) pra ele sempre aparecer por cima se os dois coincidirem. */
+  .back-to-top {
+    position: fixed; right: 24px; bottom: 24px; width: 44px; height: 44px;
+    border-radius: 12px; border: none; cursor: pointer;
+    background: var(--idade-maior); color: #e6edf3;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; line-height: 1; font-weight: 700;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+    opacity: 0; visibility: hidden; transform: translateY(8px);
+    transition: opacity .2s ease, transform .2s ease, background-color .15s ease, color .15s ease, box-shadow .15s ease;
+    z-index: 40;
+  }
+  .back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-to-top:hover {
+    background: #58a6ff; color: #0b0b0b;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.28); transform: translateY(-2px);
+  }
+  .back-to-top:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+  @media (max-width: 480px) {
+    .back-to-top { right: 16px; bottom: 16px; }
+  }
+
+  /* ---------- Anomaly card ---------- */
+  /* Grid fixo (não auto-fit) pra garantir a quebra 5 → 3+2 → 2+2+1 pedida —
+     com 5 cards, repeat(3) sobra 2 na 2ª linha e repeat(2) sobra 1 na 3ª. */
+  .anomaly-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  @media (max-width: 860px) {
+    .anomaly-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .anomaly-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ---------- Consolidação banner ---------- */
+  .consolidacao-banner {
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+    background: var(--accent-wash); border-color: var(--accent-ring);
+  }
+  .consolidacao-banner .cb-icon { font-size: 20px; flex-shrink: 0; }
+  .consolidacao-banner .cb-text { font-size: 13px; color: var(--text-secondary); flex: 1; min-width: 240px; }
+  .consolidacao-banner .cb-text b { color: var(--text-primary); font-weight: 600; }
+  .consolidacao-banner .cb-stats { display: flex; gap: 18px; flex-wrap: wrap; }
+  .consolidacao-banner .cb-stat { text-align: center; }
+  .consolidacao-banner .cb-stat .n { font-family: "Archivo", sans-serif; font-weight: 800; font-size: 19px; color: var(--accent); display: block; }
+  .consolidacao-banner .cb-stat .l { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .consolidacao-banner .cb-alerts { width: 100%; margin-top: 4px; font-size: 12px; color: var(--status-serious); }
+  .consolidacao-banner .cb-alerts ul { margin: 4px 0 0; padding-left: 18px; }
+
+  .pending-list { margin-top: 14px; }
+  .pending-list h4 { font-size: 12.5px; font-weight: 600; margin: 0 0 8px; color: var(--text-secondary); }
+  .pending-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    background: var(--status-pending-wash); border-radius: 8px; font-size: 12.5px; margin-bottom: 6px;
+  }
+  .pending-row .p-raw { font-family: "IBM Plex Mono", monospace; color: var(--text-primary); }
+  .pending-row .p-arrow { color: var(--text-muted); }
+  .pending-row .p-suggestion { color: var(--status-pending); font-weight: 600; }
+  .pending-row .p-none { color: var(--text-muted); font-style: italic; }
+  .pending-list h4.origem-head { margin-top: 16px; }
+  .origem-row { background: var(--surface-2); }
+  .origem-row .p-tag {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; font-weight: 600;
+    color: var(--text-muted); background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 6px;
+  }
+  .origem-row .p-motivo { color: var(--text-muted); }
+  .anomaly-tile {
+    padding: 13px 15px; display: flex; flex-direction: column; gap: 5px;
+    cursor: pointer; text-align: left; font-family: inherit;
+    border: 1px solid var(--border);
+  }
+  .anomaly-tile:disabled { cursor: default; }
+  .anomaly-tile:hover:not(:disabled) { border-color: var(--border-strong); }
+  .anomaly-tile .a-top { display: flex; align-items: center; justify-content: space-between; }
+  .anomaly-tile .a-value { font-size: 22px; font-weight: 800; font-family: "Archivo", sans-serif; }
+  .anomaly-tile.active-filter { border-color: var(--accent-ring); background: var(--accent-wash); }
+  .anomaly-tile .a-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .anomaly-tile .a-hint { font-size: 11px; color: var(--text-muted); }
+  .anomaly-tile .a-icon { font-size: 13px; }
+  /* Hierarquia por gravidade (24/08/2026) — 4 níveis em vez de só ok/flag:
+     zero fica calmo (verde, reforça "tá ok"); indefinido é um caso à parte
+     (valor novo pra mapear, não é bem um "problema", por isso amarelo em vez
+     de laranja); o resto usa laranja; e quem tem volume alto (>=10, ex.: os
+     "aguardando assinatura vencidos" que hoje somam dezenas) ganha fundo
+     tingido + ícone maior pra saltar aos olhos antes dos outros. */
+  .anomaly-tile.ok { background: var(--status-good-wash); }
+  .anomaly-tile.ok .a-value { color: var(--status-good); }
+  .anomaly-tile.warn { background: var(--status-warning-wash); border-color: var(--dias-preventivo); }
+  .anomaly-tile.warn .a-value { color: var(--dias-preventivo); }
+  .anomaly-tile.flag .a-value { color: var(--dias-atencao); }
+  .anomaly-tile.urgent { background: var(--status-critical-wash); border-color: var(--status-critical); }
+  .anomaly-tile.urgent .a-value { color: var(--status-critical); }
+  .anomaly-tile.urgent .a-icon { font-size: 19px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    text-align: left; font-weight: 600; color: var(--text-muted);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 9px 12px; border-bottom: 1px solid var(--border-strong);
+    cursor: pointer; white-space: nowrap; user-select: none;
+  }
+  thead th:hover { color: var(--text-secondary); }
+  thead th .arrow { opacity: 0; margin-left: 3px; }
+  thead th.sorted .arrow { opacity: 1; color: var(--accent); }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:hover { background: var(--surface-2); }
+  td.dias { font-variant-numeric: tabular-nums; }
+  td.nome { font-weight: 500; }
+  td.empresa { color: var(--text-secondary); max-width: 220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 600;
+    background: var(--p-wash); color: var(--p-color);
+  }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--p-color); }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-1); }
+
+  .pagination {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    padding: 14px; font-size: 12.5px; color: var(--text-secondary);
+  }
+  .pagination button {
+    font: inherit; padding: 6px 12px; border-radius: 7px;
+    border: 1px solid var(--border-strong); background: var(--surface-1); color: var(--text-primary);
+    cursor: pointer;
+  }
+  .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .empty-state { padding: 48px 20px; text-align: center; color: var(--text-muted); }
+
+  /* ---------- Footer notes ---------- */
+  /* Reapresentado como painel fechado (24/08/2026, a pedido do Hudson) —
+     antes era só um <hr> + texto corrido, a única área da página sem
+     nenhum tratamento de "card" como o resto do painel. Agora ganha
+     moldura própria + cabeçalho com ícone, pra fechar a página com a
+     mesma linguagem visual das outras seções em vez de parecer um rodapé
+     de rascunho esquecido. */
+  .footnote {
+    margin-top: 40px; padding: 20px 22px 18px;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    font-size: 12px; color: var(--text-muted); line-height: 1.7;
+  }
+  .footnote-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13.5px; font-weight: 700; color: var(--text-primary);
+    margin: 0 0 8px;
+  }
+  .footnote-head .icon { font-size: 15px; }
+  .footnote b { color: var(--text-secondary); }
+  .footnote ul.footnote-list { list-style: none; margin: 10px 0 0; padding: 0; }
+  .footnote-list li {
+    position: relative; padding-left: 16px; margin-bottom: 8px;
+  }
+  .footnote-list li:last-child { margin-bottom: 0; }
+  .footnote-list li::before {
+    content: '–'; position: absolute; left: 0; color: var(--text-muted);
+  }
+  .footnote .credit {
+    margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--border);
+    font-size: 12.5px; font-weight: 700; color: var(--text-secondary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+
+  /* ---------- Alternador de tema ---------- */
+  .theme-switch {
+    display: inline-flex; border: 1px solid var(--border-strong); border-radius: 100px;
+    padding: 2px; gap: 2px;
+  }
+  .theme-opt {
+    font: inherit; font-size: 11.5px; font-weight: 500; color: var(--text-secondary);
+    background: none; border: none; border-radius: 100px; padding: 4px 11px; cursor: pointer;
+    transition: all .12s ease;
+  }
+  .theme-opt:hover:not(.on) { color: var(--text-primary); }
+  .theme-opt.on { background: var(--accent-wash); color: var(--text-primary); font-weight: 600; }
+  .theme-opt:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
