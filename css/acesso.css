@@ -117,3 +117,17 @@ body.carregando #telaAcesso, body.carregando #painel { display: none; }
 }
 
 #botoesPrevia { margin-bottom: 16px; }
+
+/* aviso de base desatualizada */
+.aviso-base {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0 0 16px; padding: 12px 16px; border-radius: 12px;
+  background: var(--status-warning-wash); border: 1px solid var(--status-warning);
+  color: var(--text-primary); font-size: 14px;
+}
+.aviso-base-texto { flex: 1 1 260px; }
+.aviso-base-acao {
+  padding: 7px 12px; border-radius: 8px; background: var(--tab-active-bg); color: #fff;
+  text-decoration: none; font-weight: 600; font-size: 13.5px; white-space: nowrap;
+}
+.aviso-base-acao:hover { filter: brightness(1.08); }

@@ -4,19 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Painel Analítico de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.0.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.0.0">
-<script>
-  // aplica a preferência salva antes da página pintar, pra não piscar no tema errado
-  (function(){
-    try {
-      var t = localStorage.getItem('jaTheme');
-      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
-    } catch (e) {}
-  })();
-</script>
+<link rel="stylesheet" href="css/painel.css?v=2.1.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.1.0">
+<script src="js/tema.js?v=2.1.0"></script>
 </head>
 <body class="carregando">
 
@@ -95,10 +88,18 @@
       <div class="usuario-barra" id="usuarioBarra">
         <span class="usuario-nome" id="usuarioNome"></span>
         <a class="usuario-acao" id="linkCarga" href="carga.html" hidden>Atualizar base</a>
+        <a class="usuario-acao" id="linkAcessos" href="acessos.html" hidden>Acessos</a>
         <button class="usuario-acao" id="btnTrocarSenha" type="button">Trocar senha</button>
         <button class="usuario-acao" id="btnSair" type="button">Sair</button>
       </div>
     </div>
+  </div>
+
+  <!-- AVISO DE BASE DESATUALIZADA -->
+  <div class="aviso-base" id="avisoBaseAntiga" role="status" hidden>
+    <span class="aviso-base-icone" aria-hidden="true">⚠️</span>
+    <span class="aviso-base-texto" id="avisoBaseTexto"></span>
+    <a class="aviso-base-acao" id="avisoBaseAcao" href="carga.html" hidden>Atualizar base</a>
   </div>
 
   <!-- RESUMO DA CONSOLIDAÇÃO -->
@@ -535,10 +536,10 @@
 </div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script src="js/config.js?v=2.0.0"></script>
-<script src="js/acesso.js?v=2.0.0"></script>
-<script src="js/agregados.js?v=2.0.0"></script>
-<script src="js/painel.js?v=2.0.0"></script>
-<script src="js/entrada.js?v=2.0.0"></script>
+<script src="js/config.js?v=2.1.0"></script>
+<script src="js/acesso.js?v=2.1.0"></script>
+<script src="js/agregados.js?v=2.1.0"></script>
+<script src="js/painel.js?v=2.1.0"></script>
+<script src="js/entrada.js?v=2.1.0"></script>
 </body>
 </html>

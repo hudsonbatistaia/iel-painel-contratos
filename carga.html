@@ -4,18 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Atualizar base – Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.0.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.0.0">
-<script>
-  (function(){
-    try {
-      var t = localStorage.getItem('jaTheme');
-      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
-    } catch (e) {}
-  })();
-</script>
+<link rel="stylesheet" href="css/painel.css?v=2.1.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.1.0">
+<script src="js/tema.js?v=2.1.0"></script>
 </head>
 <body>
 <div class="carga-wrap">
@@ -26,6 +20,7 @@
     </div>
     <div class="usuario-barra">
       <span class="usuario-nome" id="usuarioNome"></span>
+      <a class="usuario-acao" href="acessos.html">Acessos</a>
       <button class="usuario-acao" id="btnSair" type="button">Sair</button>
     </div>
   </div>
@@ -103,9 +98,9 @@
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
 <script src="vendor/xlsx-0.20.3.full.min.js"></script>
-<script src="js/config.js?v=2.0.0"></script>
-<script src="js/acesso.js?v=2.0.0"></script>
-<script src="js/planilha.js?v=2.0.0"></script>
-<script src="js/carga.js?v=2.0.0"></script>
+<script src="js/config.js?v=2.1.0"></script>
+<script src="js/acesso.js?v=2.1.0"></script>
+<script src="js/planilha.js?v=2.1.0"></script>
+<script src="js/carga.js?v=2.1.0"></script>
 </body>
 </html>

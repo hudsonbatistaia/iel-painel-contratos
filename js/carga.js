@@ -284,7 +284,11 @@
   $('btnConfirmar').addEventListener('click', confirmar);
   $('btnCancelar').addEventListener('click', function () { $('btnCancelar').textContent = 'Cancelar'; $('btnConfirmar').hidden = false; $('btnConfirmar').disabled = false; limparTudo(); window.scrollTo(0, 0); });
   $('btnDesfazer').addEventListener('click', desfazer);
-  $('btnSair').addEventListener('click', async function () { await A.sair(); window.location.href = 'index.html'; });
+  $('btnSair').addEventListener('click', async function () {
+    try { await A.rpc('registrar', { p_evento: 'saída' }); } catch (e) {}
+    await A.sair();
+    window.location.href = 'index.html';
+  });
 
   (async function iniciar() {
     $('dataReferencia').value = hojeISO();

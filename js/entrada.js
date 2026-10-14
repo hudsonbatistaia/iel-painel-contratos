@@ -49,11 +49,41 @@
     };
   }
 
-  async function abrirPainel() {
+  /* O código dos gráficos (painel.js, herdado do protótipo) monta o HTML juntando
+     textos. Para um nome ou empresa vindo da planilha nunca virar código na tela,
+     os caracteres que abrem tags e atributos (< > ") são trocados por sinais
+     parecidos que não têm efeito. Só muda a exibição; o banco guarda o original. */
+  var TROCAS = { '<': '‹', '>': '›', '"': '”' };
+  function neutralizar(valor) {
+    return typeof valor === 'string' ? valor.replace(/[<>"]/g, function (c) { return TROCAS[c]; }) : valor;
+  }
+  function neutralizarRegistros(lista) {
+    return lista.map(function (r) {
+      var o = {};
+      Object.keys(r).forEach(function (k) { o[k] = neutralizar(r[k]); });
+      return o;
+    });
+  }
+
+  // aviso quando a última carga completa tem mais de 40 dias: os vencimentos usam a data de hoje
+  var DIAS_BASE_ANTIGA = 40;
+  function avisarBaseAntiga(dataRef, admin) {
+    if (!dataRef) return;
+    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    var dias = Math.round((hoje - new Date(String(dataRef).slice(0, 10) + 'T00:00:00')) / 86400000);
+    if (dias <= DIAS_BASE_ANTIGA) return;
+    $('avisoBaseTexto').innerHTML = 'A última atualização completa da base é de <b>' + fmtData(dataRef) + '</b> (há ' + dias + ' dias). ' +
+      'Vencimentos, alertas e idades usam a data de hoje, então podem estar desatualizados.' +
+      (admin ? ' Carregue a extração mais recente.' : ' Peça a atualização da base ao administrador.');
+    $('avisoBaseAcao').hidden = !admin;
+    $('avisoBaseAntiga').hidden = false;
+  }
+
+  async function abrirPainel(registrarEntrada) {
     mostrar('carregando');
     var eu;
     try {
-      eu = await A.rpc('sessao');
+      eu = await A.rpc('sessao', { p_registrar: registrarEntrada === true });
     } catch (e) {
       await A.sair();
       mostrar('acesso');
@@ -63,6 +93,7 @@
     var admin = eu.papel === 'admin';
     $('usuarioNome').textContent = eu.nome + (admin ? ' · administrador' : '');
     $('linkCarga').hidden = !admin;
+    $('linkAcessos').hidden = !admin;
     $('linkCargaVazia').hidden = !admin;
 
     var dados;
@@ -79,8 +110,14 @@
     $('badgeBase').textContent = '● Base de ' + fmtData(cons && cons.dataBaseAtual);
     $('infoUltimaCarga').textContent = 'Última atualização: ' + fmtData(dados.cargas[0] && dados.cargas[0].criado_em);
 
+    if (cons) cons.alertas = cons.alertas.map(neutralizar);
+    // a base só fica "em dia" com uma carga completa; a parcial atualiza poucos contratos
+    var ultimaCompleta = dados.cargas.filter(function (c) { return c.tipo !== 'parcial'; })[0];
+    avisarBaseAntiga(ultimaCompleta && ultimaCompleta.data_referencia, admin);
+
+    var registros = neutralizarRegistros(dados.records);
     mostrar('painel');
-    window.iniciarPainel(dados.records, window.calcularAgregados(dados.records, cons));
+    window.iniciarPainel(registros, window.calcularAgregados(registros, cons));
     A.vigiarInatividade(function () { window.location.reload(); });
   }
 
@@ -93,7 +130,7 @@
       await A.entrar($('campoUsuario').value, $('campoSenha').value);
       $('campoSenha').value = '';
       aviso('msgAcesso', '');
-      await abrirPainel();
+      await abrirPainel(true);
     } catch (e) {
       aviso('msgAcesso', e.message);
     } finally {
@@ -130,12 +167,13 @@
     if (s1 !== s2) { aviso('msgNovaSenha', 'As duas senhas não são iguais.'); return; }
     try {
       await A.trocarSenha(s1);
+      A.rpc('registrar', { p_evento: 'troca de senha' }).catch(function () {});
       $('campoNova1').value = $('campoNova2').value = '';
       aviso('msgNovaSenha', 'Senha alterada.', true);
       if (modoRecuperacao) {
         modoRecuperacao = false;
         history.replaceState(null, '', window.location.pathname);
-        setTimeout(abrirPainel, 800);
+        setTimeout(function () { abrirPainel(true); }, 800);
       } else {
         setTimeout(function () { mostrar('painel'); }, 800);
       }
@@ -144,7 +182,11 @@
     }
   });
 
-  async function sairAgora() { await A.sair(); window.location.reload(); }
+  async function sairAgora() {
+    try { await A.rpc('registrar', { p_evento: 'saída' }); } catch (e) {}
+    await A.sair();
+    window.location.reload();
+  }
   $('btnSair').addEventListener('click', sairAgora);
   $('btnSairVazia').addEventListener('click', sairAgora);
 

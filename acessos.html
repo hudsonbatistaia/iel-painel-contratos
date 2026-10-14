@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+<title>Acessos – Painel de Contratos</title>
+<link rel="icon" href="img/logo-iel.png">
+<link rel="stylesheet" href="css/painel.css?v=2.1.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.1.0">
+<script src="js/tema.js?v=2.1.0"></script>
+</head>
+<body>
+<div class="carga-wrap">
+  <div class="carga-topo">
+    <div>
+      <a class="usuario-acao" href="index.html">← Voltar ao painel</a>
+      <h1>Registro de acessos</h1>
+    </div>
+    <div class="usuario-barra">
+      <span class="usuario-nome" id="usuarioNome"></span>
+      <a class="usuario-acao" href="carga.html">Atualizar base</a>
+      <button class="usuario-acao" id="btnSair" type="button">Sair</button>
+    </div>
+  </div>
+
+  <p class="carga-msg" id="msgGeral">Carregando…</p>
+
+  <div id="conteudo" hidden>
+    <div class="card carga-passo">
+      <p>Entradas, saídas, trocas de senha, cargas e cargas desfeitas — os mais recentes primeiro (até 500).</p>
+      <div class="carga-linha" style="margin-bottom:12px;">
+        <label>Usuário
+          <select class="input" id="filtroUsuario"><option value="">Todos</option></select></label>
+        <label>O quê
+          <select class="input" id="filtroEvento">
+            <option value="">Tudo</option>
+            <option value="entrada">Entradas</option>
+            <option value="saída">Saídas</option>
+            <option value="troca de senha">Trocas de senha</option>
+            <option value="carga">Cargas e desfazer</option>
+          </select></label>
+      </div>
+      <div class="carga-numeros" id="resumoAcessos"></div>
+      <div class="carga-lista"><div class="table-wrap"><table>
+        <thead><tr><th>Quando</th><th>Quem</th><th>O quê</th></tr></thead>
+        <tbody id="tabelaAcessos"></tbody>
+      </table></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="vendor/supabase-2.45.4.min.js"></script>
+<script src="js/config.js?v=2.1.0"></script>
+<script src="js/acesso.js?v=2.1.0"></script>
+<script src="js/acessos.js?v=2.1.0"></script>
+</body>
+</html>
