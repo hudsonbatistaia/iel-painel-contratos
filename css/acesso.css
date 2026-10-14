@@ -131,3 +131,7 @@ body.carregando #telaAcesso, body.carregando #painel { display: none; }
   text-decoration: none; font-weight: 600; font-size: 13.5px; white-space: nowrap;
 }
 .aviso-base-acao:hover { filter: brightness(1.08); }
+
+/* notas informativas da última carga (não são alertas) */
+.consolidacao-banner .cb-notas { width: 100%; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12.5px; color: var(--text-secondary); }
+.consolidacao-banner .cb-notas span { color: var(--status-good); }

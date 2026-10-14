@@ -2078,6 +2078,10 @@ window.iniciarPainel = function (RECORDS, AGG) {
   function renderConsolidacaoBanner() {
     var c = AGG.consolidacao;
     var el = document.getElementById('consolidacaoBanner');
+    // informações da carga que não são problema (ex.: CPFs completados) — tom neutro
+    var notasHtml = (c && c.notas && c.notas.length)
+      ? '<div class="cb-notas">' + c.notas.map(function(n){ return '<span>✓ ' + n + '</span>'; }).join('') + '</div>'
+      : '';
     if (!c) { el.closest('.section').style.display = 'none'; return; }
     var alertsHtml = '';
     if (c.alertas && c.alertas.length) {
@@ -2100,6 +2104,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
         '<span class="cb-stat"><span class="n">'+fmtInt(c.excluidos)+'</span><span class="l">Marcados excluído</span></span>' +
         '<span class="cb-stat"><span class="n">'+fmtInt(c.reativados)+'</span><span class="l">Reativados</span></span>' +
       '</span>' +
+      notasHtml +
       alertsHtml;
   }
 

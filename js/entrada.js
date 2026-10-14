@@ -34,7 +34,8 @@
     (r.situacoesNovas || []).forEach(function (s) {
       alertas.push('Status nunca visto antes na base: ' + s + ' — precisa de definição.');
     });
-    if (r.cpfCompletados) alertas.push(r.cpfCompletados + ' CPF(s) que estavam mascarados foram completados nesta carga.');
+    var notas = [];
+    if (r.cpfCompletados) notas.push(r.cpfCompletados + (r.cpfCompletados === 1 ? ' CPF que estava mascarado foi completado' : ' CPFs que estavam mascarados foram completados') + ' com a planilha nova.');
     return {
       tipo: c.tipo === 'inicial' ? 'carga_inicial' : 'incremental',
       dataBaseAtual: c.data_referencia,
@@ -45,7 +46,8 @@
       mudouSituacao: r.mudouSituacao || 0,
       excluidos: r.excluidos || 0,
       reativados: r.reativados || 0,
-      alertas: alertas
+      alertas: alertas,
+      notas: notas
     };
   }
 
@@ -110,7 +112,7 @@
     $('badgeBase').textContent = '● Base de ' + fmtData(cons && cons.dataBaseAtual);
     $('infoUltimaCarga').textContent = 'Última atualização: ' + fmtData(dados.cargas[0] && dados.cargas[0].criado_em);
 
-    if (cons) cons.alertas = cons.alertas.map(neutralizar);
+    if (cons) { cons.alertas = cons.alertas.map(neutralizar); cons.notas = cons.notas.map(neutralizar); }
     // a base só fica "em dia" com uma carga completa; a parcial atualiza poucos contratos
     var ultimaCompleta = dados.cargas.filter(function (c) { return c.tipo !== 'parcial'; })[0];
     avisarBaseAntiga(ultimaCompleta && ultimaCompleta.data_referencia, admin);
