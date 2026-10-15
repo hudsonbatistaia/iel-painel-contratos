@@ -88,8 +88,7 @@
       eu = await A.rpc('sessao', { p_registrar: registrarEntrada === true });
     } catch (e) {
       await A.sair();
-      mostrar('acesso');
-      aviso('msgAcesso', e.message);
+      window.location.href = 'https://portal.hbone.com.br';
       return;
     }
     var admin = eu.papel === 'admin';
@@ -187,7 +186,7 @@
   async function sairAgora() {
     try { await A.rpc('registrar', { p_evento: 'saída' }); } catch (e) {}
     await A.sair();
-    window.location.reload();
+    window.location.href = 'https://portal.hbone.com.br';
   }
   $('btnSair').addEventListener('click', sairAgora);
   $('btnSairVazia').addEventListener('click', sairAgora);
@@ -204,6 +203,6 @@
   (async function iniciar() {
     if (/type=recovery/.test(window.location.hash)) return; // o evento acima cuida
     var s = await A.sessaoAtual();
-    if (s) await abrirPainel(); else mostrar('acesso');
+    if (s) await abrirPainel(); else window.location.href = 'https://portal.hbone.com.br';
   })();
 })();
