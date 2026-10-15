@@ -59,26 +59,38 @@
     return s || null;
   }
 
+  // coluna que diz o programa de cada linha (Jovem Aprendiz, estágio...)
+  var COLUNA_TIPO = 'Tipo de Contrato';
+
   /* linhasPlanilha: saída de XLSX.utils.sheet_to_json(..., {defval: null})
      dicionario: [{tipo, chave, valor}]
-     Devolve { linhas, faltandoColunas, problemas, grafiasNovas } */
-  function interpretar(linhasPlanilha, dicionario) {
+     doPrograma: função(valor de "Tipo de Contrato") -> true se a linha é do
+                 programa escolhido. Linhas de outro programa são puladas.
+     Devolve { linhas, faltandoColunas, problemas, grafiasNovas, outroPrograma, tiposOutros } */
+  function interpretar(linhasPlanilha, dicionario, doPrograma) {
     var faltandoColunas = [];
     var primeira = linhasPlanilha[0] || {};
     Object.keys(COLUNAS).forEach(function (k) {
       if (!(COLUNAS[k] in primeira)) faltandoColunas.push(COLUNAS[k]);
     });
-    if (faltandoColunas.length) return { linhas: [], faltandoColunas: faltandoColunas, problemas: [], grafiasNovas: [] };
+    if (faltandoColunas.length) return { linhas: [], faltandoColunas: faltandoColunas, problemas: [], grafiasNovas: [], outroPrograma: 0, tiposOutros: [] };
+    var temTipo = COLUNA_TIPO in primeira;
+    var outroPrograma = 0, tiposOutros = {};
 
     var dic = { funcao: {}, instituicao: {} };
     (dicionario || []).forEach(function (d) { dic[d.tipo][d.chave] = d.valor; });
 
     var linhas = [], problemas = [], novas = {}, chaves = {};
     linhasPlanilha.forEach(function (x, i) {
-      var nLinha = i + 2; // linha 1 é o cabeçalho
+      var nLinha = x.__linha || i + 2; // linha 1 é o cabeçalho; __linha = linha original quando a planilha foi separada por programa
       var contrato = soDigitos(x[COLUNAS.contrato]);
       var vazia = Object.keys(COLUNAS).every(function (k) { return x[COLUNAS[k]] == null || x[COLUNAS[k]] === ''; });
       if (vazia) return;
+      if (temTipo && doPrograma) {
+        var tipo = texto(x[COLUNA_TIPO]);
+        // tipo vazio não decide nada: a linha segue para as conferências normais
+        if (tipo && !doPrograma(tipo)) { outroPrograma++; tiposOutros[tipo] = true; return; }
+      }
       if (!contrato) { problemas.push({ linha: nLinha, motivo: 'sem número de contrato — linha ignorada' }); return; }
 
       var cpf = soDigitos(x[COLUNAS.cpf], 11);
@@ -134,7 +146,9 @@
       linhas: linhas,
       faltandoColunas: [],
       problemas: problemas,
-      grafiasNovas: Object.keys(novas).map(function (k) { return novas[k]; })
+      grafiasNovas: Object.keys(novas).map(function (k) { return novas[k]; }),
+      outroPrograma: outroPrograma,
+      tiposOutros: Object.keys(tiposOutros)
     };
   }
 
@@ -152,7 +166,7 @@
     });
   }
 
-  var api = { COLUNAS: COLUNAS, chave: chave, data: data, interpretar: interpretar, aplicarGrafias: aplicarGrafias };
+  var api = { COLUNAS: COLUNAS, COLUNA_TIPO: COLUNA_TIPO, chave: chave, data: data, interpretar: interpretar, aplicarGrafias: aplicarGrafias };
   raiz.Planilha = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

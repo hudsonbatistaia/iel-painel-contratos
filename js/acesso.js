@@ -43,11 +43,22 @@
   async function sair() {
     try { await cliente.auth.signOut(); } catch (e) {}
     try { window.sessionStorage.clear(); } catch (e) {}
+    var domain = window.location.hostname.endsWith('hbone.com.br') ? '; domain=.hbone.com.br' : '';
+    document.cookie = 'sb_auth_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + domain + '; SameSite=Lax; Secure';
   }
 
   async function sessaoAtual() {
     var r = await cliente.auth.getSession();
-    return r.data ? r.data.session : null;
+    if (r.data && r.data.session) return r.data.session;
+    var m = document.cookie.match(/(?:^|; )sb_auth_token=([^;]*)/);
+    if (m && m[1]) {
+      try {
+        var token = decodeURIComponent(m[1]);
+        var ret = await cliente.auth.setSession({ access_token: token, refresh_token: '' });
+        if (ret.data && ret.data.session) return ret.data.session;
+      } catch (e) {}
+    }
+    return null;
   }
 
   async function enviarRecuperacao(usuario) {

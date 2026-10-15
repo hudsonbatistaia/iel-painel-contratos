@@ -1,20 +1,32 @@
-/* Página do painel: login -> busca os dados no banco -> desenha o painel. */
+/* Página do painel: login -> tela inicial (escolha do programa) ->
+   busca os dados do programa no banco -> desenha o painel. */
 (function () {
   "use strict";
 
   var A = window.Acesso;
+  var PR = window.Programas;
   var $ = function (id) { return document.getElementById(id); };
   var modoRecuperacao = false;
+  var telaAtual = null;      // para o "Cancelar" da troca de senha voltar ao lugar certo
+  var vigiando = false;
 
   function mostrar(qual) {
     document.body.classList.remove('carregando');
+    if (qual !== 'senha' && qual !== 'carregando') telaAtual = qual;
     $('avisoCarregando').hidden = qual !== 'carregando';
     $('telaAcesso').hidden = qual !== 'acesso' && qual !== 'senha';
     $('formEntrar').hidden = qual !== 'acesso';
     $('formNovaSenha').hidden = qual !== 'senha';
     $('baseVazia').hidden = qual !== 'vazia';
+    $('telaInicio').hidden = qual !== 'inicio';
     $('painel').hidden = qual !== 'painel';
   }
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmtInt(n) { return Number(n || 0).toLocaleString('pt-BR'); }
   function aviso(id, texto, ok) {
     var el = $(id);
     el.textContent = texto || '';
@@ -69,7 +81,7 @@
 
   // aviso quando a última carga completa tem mais de 40 dias: os vencimentos usam a data de hoje
   var DIAS_BASE_ANTIGA = 40;
-  function avisarBaseAntiga(dataRef, admin) {
+  function avisarBaseAntiga(dataRef, admin, programa) {
     if (!dataRef) return;
     var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
     var dias = Math.round((hoje - new Date(String(dataRef).slice(0, 10) + 'T00:00:00')) / 86400000);
@@ -77,11 +89,13 @@
     $('avisoBaseTexto').innerHTML = 'A última atualização completa da base é de <b>' + fmtData(dataRef) + '</b> (há ' + dias + ' dias). ' +
       'Vencimentos, alertas e idades usam a data de hoje, então podem estar desatualizados.' +
       (admin ? ' Carregue a extração mais recente.' : ' Peça a atualização da base ao administrador.');
+    $('avisoBaseAcao').href = PR.url('carga.html', programa);
     $('avisoBaseAcao').hidden = !admin;
     $('avisoBaseAntiga').hidden = false;
   }
 
-  async function abrirPainel(registrarEntrada) {
+  // depois do login: tela inicial, ou direto o painel se o endereço já diz o programa
+  async function abrir(registrarEntrada) {
     mostrar('carregando');
     var eu;
     try {
@@ -93,20 +107,78 @@
       return;
     }
     var admin = eu.papel === 'admin';
-    $('usuarioNome').textContent = eu.nome + (admin ? ' · administrador' : '');
-    $('linkCarga').hidden = !admin;
+    var quem = eu.nome + (admin ? ' · administrador' : '');
+    $('usuarioNome').textContent = quem;
+    $('inicioUsuario').textContent = quem;
     $('linkAcessos').hidden = !admin;
+    $('inicioAcessos').hidden = !admin;
+    if (!vigiando) { vigiando = true; A.vigiarInatividade(function () { window.location.reload(); }); }
+
+    var programa = PR.atual();
+    if (programa) await abrirPainel(programa, admin);
+    else await mostrarInicio(admin);
+  }
+
+  async function mostrarInicio(admin) {
+    document.title = 'Painel de Contratos';
+    var resumo;
+    try {
+      resumo = await A.rpc('resumo_programas');
+    } catch (e) {
+      mostrar('inicio');
+      $('inicioMsg').textContent = 'Não foi possível carregar o resumo: ' + e.message;
+      return;
+    }
+    $('inicioCartoes').innerHTML = resumo.map(function (r) {
+      var info = PR.INFO[r.programa];
+      if (!info) return '';
+      if (!r.total) {
+        return '<div class="card programa-cartao vazio" data-programa="' + esc(r.programa) + '">' +
+          '<span class="programa-nome">' + esc(info.nome) + '</span>' +
+          '<span class="programa-num">Ainda sem dados</span>' +
+          '<span class="programa-meta">Nenhuma planilha deste programa foi carregada.</span>' +
+          (admin ? '<a class="programa-ir" href="' + esc(PR.url('carga.html', r.programa)) + '">Carregar a primeira planilha →</a>' : '') +
+          '</div>';
+      }
+      return '<a class="card programa-cartao" data-programa="' + esc(r.programa) + '" href="' + esc(PR.url('index.html', r.programa)) + '">' +
+        '<span class="programa-nome">' + esc(info.nome) + '</span>' +
+        '<span class="programa-num">' + fmtInt(r.ativos) + '</span>' +
+        '<span class="programa-num-l">' + (r.ativos === 1 ? 'contrato ativo' : 'contratos ativos') + '</span>' +
+        '<span class="programa-meta">' + fmtInt(r.empresas) + (r.empresas === 1 ? ' empresa' : ' empresas') +
+          ' · ' + fmtInt(r.total) + ' contratos na base · dados de ' + esc(fmtData(r.data_referencia)) + '</span>' +
+        '<span class="programa-ir">Abrir painel →</span></a>';
+    }).join('');
+    mostrar('inicio');
+  }
+
+  async function abrirPainel(programa, admin) {
+    var info = PR.INFO[programa];
+    document.title = 'Painel de Contratos · ' + info.nome;
+    $('marcaPrograma').textContent = info.marca;
+    document.querySelectorAll('#programaTroca .programa-opt').forEach(function (a) {
+      var on = a.getAttribute('data-programa') === programa;
+      a.classList.toggle('on', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    $('linkCarga').href = PR.url('carga.html', programa);
+    $('linkCarga').hidden = !admin;
+    $('linkCargaVazia').href = PR.url('carga.html', programa);
     $('linkCargaVazia').hidden = !admin;
+    PR.aplicarTextos(programa);
 
     var dados;
     try {
-      dados = await A.rpc('dados_painel');
+      dados = await A.rpc('dados_painel', { p_programa: programa });
     } catch (e) {
       mostrar('acesso');
       aviso('msgAcesso', 'Não foi possível carregar os dados: ' + e.message);
       return;
     }
-    if (!dados.records.length) { mostrar('vazia'); return; }
+    if (!dados.records.length) {
+      $('textoBaseVazia').textContent = 'Ainda não há contratos do ' + info.nome + ' carregados.';
+      mostrar('vazia');
+      return;
+    }
 
     var cons = consolidacaoDe(dados.cargas);
     $('badgeBase').textContent = '● Base de ' + fmtData(cons && cons.dataBaseAtual);
@@ -115,12 +187,11 @@
     if (cons) { cons.alertas = cons.alertas.map(neutralizar); cons.notas = cons.notas.map(neutralizar); }
     // a base só fica "em dia" com uma carga completa; a parcial atualiza poucos contratos
     var ultimaCompleta = dados.cargas.filter(function (c) { return c.tipo !== 'parcial'; })[0];
-    avisarBaseAntiga(ultimaCompleta && ultimaCompleta.data_referencia, admin);
+    avisarBaseAntiga(ultimaCompleta && ultimaCompleta.data_referencia, admin, programa);
 
     var registros = neutralizarRegistros(dados.records);
     mostrar('painel');
-    window.iniciarPainel(registros, window.calcularAgregados(registros, cons));
-    A.vigiarInatividade(function () { window.location.reload(); });
+    window.iniciarPainel(registros, window.calcularAgregados(registros, cons), { programa: programa, rotulos: info.rotulos });
   }
 
   $('formEntrar').addEventListener('submit', async function (ev) {
@@ -132,7 +203,7 @@
       await A.entrar($('campoUsuario').value, $('campoSenha').value);
       $('campoSenha').value = '';
       aviso('msgAcesso', '');
-      await abrirPainel(true);
+      await abrir(true);
     } catch (e) {
       aviso('msgAcesso', e.message);
     } finally {
@@ -151,15 +222,17 @@
     }
   });
 
-  $('btnTrocarSenha').addEventListener('click', function () {
+  function pedirNovaSenha() {
     $('tituloNovaSenha').textContent = 'Trocar senha';
     aviso('msgNovaSenha', '');
     mostrar('senha');
     $('campoNova1').focus();
-  });
+  }
+  $('btnTrocarSenha').addEventListener('click', pedirNovaSenha);
+  $('inicioTrocarSenha').addEventListener('click', pedirNovaSenha);
   $('btnCancelarSenha').addEventListener('click', function () {
     if (modoRecuperacao) { modoRecuperacao = false; A.sair().then(function () { mostrar('acesso'); }); }
-    else mostrar('painel');
+    else mostrar(telaAtual || 'inicio');
   });
 
   $('formNovaSenha').addEventListener('submit', async function (ev) {
@@ -175,9 +248,9 @@
       if (modoRecuperacao) {
         modoRecuperacao = false;
         history.replaceState(null, '', window.location.pathname);
-        setTimeout(function () { abrirPainel(true); }, 800);
+        setTimeout(function () { abrir(true); }, 800);
       } else {
-        setTimeout(function () { mostrar('painel'); }, 800);
+        setTimeout(function () { mostrar(telaAtual || 'inicio'); }, 800);
       }
     } catch (e) {
       aviso('msgNovaSenha', e.message);
@@ -187,10 +260,11 @@
   async function sairAgora() {
     try { await A.rpc('registrar', { p_evento: 'saída' }); } catch (e) {}
     await A.sair();
-    window.location.reload();
+    window.location.href = 'https://portal.hbone.com.br';
   }
   $('btnSair').addEventListener('click', sairAgora);
   $('btnSairVazia').addEventListener('click', sairAgora);
+  $('inicioSair').addEventListener('click', sairAgora);
 
   // chegou pelo link do e-mail de "esqueci minha senha"
   A.cliente.auth.onAuthStateChange(function (evento) {
@@ -204,6 +278,6 @@
   (async function iniciar() {
     if (/type=recovery/.test(window.location.hash)) return; // o evento acima cuida
     var s = await A.sessaoAtual();
-    if (s) await abrirPainel(); else mostrar('acesso');
+    if (s) await abrir(); else window.location.href = 'https://portal.hbone.com.br';
   })();
 })();

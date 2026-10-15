@@ -7,16 +7,16 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Atualizar base – Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.1.1">
-<link rel="stylesheet" href="css/acesso.css?v=2.1.1">
-<script src="js/tema.js?v=2.1.1"></script>
+<link rel="stylesheet" href="css/painel.css?v=2.2.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.2.0">
+<script src="js/tema.js?v=2.2.0"></script>
 </head>
 <body>
 <div class="carga-wrap">
   <div class="carga-topo">
     <div>
-      <a class="usuario-acao" href="index.html">← Voltar ao painel</a>
-      <h1>Atualizar base</h1>
+      <a class="usuario-acao" id="linkVoltar" href="index.html">← Voltar ao painel</a>
+      <h1>Atualizar base <span class="carga-programa" id="tituloPrograma"></span></h1>
     </div>
     <div class="usuario-barra">
       <span class="usuario-nome" id="usuarioNome"></span>
@@ -28,12 +28,26 @@
   <p class="carga-msg" id="msgGeral">Carregando…</p>
 
   <div id="conteudo" hidden>
+    <!-- 0. programa -->
+    <div class="card carga-passo" id="passoPrograma">
+      <h2>De qual programa é a planilha?</h2>
+      <div class="carga-opcoes">
+        <label class="carga-opcao"><input type="radio" name="programa" value="aprendiz" checked>
+          <div><b>Programa Jovem Aprendiz</b><span>Extração com "Tipo de Contrato" = Jovem Aprendiz.</span></div></label>
+        <label class="carga-opcao"><input type="radio" name="programa" value="estagio">
+          <div><b>Programa de Estágio</b><span>Extração dos contratos de estágio.</span></div></label>
+        <label class="carga-opcao"><input type="radio" name="programa" value="ambos">
+          <div><b>Os dois programas</b><span>Uma planilha só, com aprendiz e estágio. O sistema separa pelo "Tipo de Contrato" e grava as duas cargas juntas.</span></div></label>
+      </div>
+      <p class="carga-msg" style="margin-top:10px;">A carga, o histórico e o "desfazer" abaixo valem só para o programa escolhido.</p>
+    </div>
+
     <!-- 1. tipo -->
     <div class="card carga-passo" id="passoTipo">
       <h2>1. Que planilha é esta?</h2>
       <div class="carga-opcoes">
         <label class="carga-opcao"><input type="radio" name="tipo" value="completa" checked>
-          <div><b>Extração completa</b><span>Todos os contratos (ativos, encerrados e antigos). Quem não estiver na planilha vira "Contrato Excluído".</span></div></label>
+          <div><b>Extração completa</b><span>Todos os contratos do programa (ativos, encerrados e antigos). Quem não estiver na planilha vira "Contrato Excluído".</span></div></label>
         <label class="carga-opcao"><input type="radio" name="tipo" value="parcial">
           <div><b>Só alguns contratos</b><span>Atualiza e acrescenta os que vieram. Ninguém é marcado como excluído.</span></div></label>
       </div>
@@ -83,8 +97,9 @@
 
     <!-- histórico -->
     <div class="card carga-passo">
-      <h2>Cargas feitas</h2>
-      <div class="carga-lista"><div class="table-wrap"><table>
+      <h2>Cargas feitas <span class="carga-programa" id="historicoPrograma"></span></h2>
+      <p id="notaHistoricoAmbos" hidden>Para ver o histórico ou desfazer uma carga, escolha um programa só no início da página. Cada programa tem o próprio histórico, e o "desfazer" vale para um de cada vez.</p>
+      <div class="carga-lista" id="historicoTabela"><div class="table-wrap"><table>
         <thead><tr><th>Dados de</th><th>Tipo</th><th>Arquivo</th><th>Gravada em</th><th>Novos</th><th>Mudaram</th><th>Excluídos</th><th></th></tr></thead>
         <tbody id="tabelaCargas"></tbody>
       </table></div></div>
@@ -98,9 +113,10 @@
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
 <script src="vendor/xlsx-0.20.3.full.min.js"></script>
-<script src="js/config.js?v=2.1.1"></script>
-<script src="js/acesso.js?v=2.1.1"></script>
-<script src="js/planilha.js?v=2.1.1"></script>
-<script src="js/carga.js?v=2.1.1"></script>
+<script src="js/config.js?v=2.2.0"></script>
+<script src="js/acesso.js?v=2.2.0"></script>
+<script src="js/programas.js?v=2.2.0"></script>
+<script src="js/planilha.js?v=2.2.0"></script>
+<script src="js/carga.js?v=2.2.0"></script>
 </body>
 </html>
