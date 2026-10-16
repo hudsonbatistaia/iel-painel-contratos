@@ -52,6 +52,8 @@
       tipo: c.tipo === 'inicial' ? 'carga_inicial' : 'incremental',
       dataBaseAtual: c.data_referencia,
       dataBaseAnterior: cargas[1] ? cargas[1].data_referencia : null,
+      periodoInicio: c.periodo_inicio || null,
+      periodoFim: c.periodo_fim || null,
       baseAnteriorTotal: c.total_antes,
       planilhaNovaTotal: c.total_planilha,
       novos: r.novos || 0,

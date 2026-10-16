@@ -2093,16 +2093,23 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
       alertsHtml = '<div class="cb-alerts"><b>Fora do padrão nesta rodada:</b><ul>' +
         c.alertas.map(function(a){ return '<li>'+a+'</li>'; }).join('') + '</ul></div>';
     }
+    // período coberto pela extração desta rodada (informado na tela de carga)
+    var periodoHtml = c.periodoInicio
+      ? ' <span class="cb-periodo">Período dos dados desta extração: <b>' + fmtDate(c.periodoInicio) + ' a ' + fmtDate(c.periodoFim) + '</b>.</span>'
+      : '';
     if (c.tipo === 'carga_inicial') {
       el.innerHTML =
         '<span class="cb-icon">🗂️</span>' +
-        '<span class="cb-text">Carga inicial da base histórica em <b>'+fmtDate(c.dataBaseAtual)+'</b>: <b>'+fmtInt(c.planilhaNovaTotal)+' registros</b> consolidados por Contrato + CPF. Importada do painel anterior; as próximas atualizações entram pela planilha de extração mensal.</span>' +
+        '<span class="cb-text">Carga inicial da base histórica em <b>'+fmtDate(c.dataBaseAtual)+'</b>: <b>'+fmtInt(c.planilhaNovaTotal)+' registros</b> consolidados por Contrato + CPF. Importada do painel anterior; as próximas atualizações entram pela planilha de extração mensal.' + periodoHtml + '</span>' +
         alertsHtml;
       return;
     }
     el.innerHTML =
       '<span class="cb-icon">🔄</span>' +
-      '<span class="cb-text">Consolidação rodada em <b>'+fmtDate(c.dataBaseAtual)+'</b>: base de '+fmtDate(c.dataBaseAnterior)+' (<b>'+fmtInt(c.baseAnteriorTotal)+'</b>) + extração nova (<b>'+fmtInt(c.planilhaNovaTotal)+'</b>) → <b>'+fmtInt(AGG.totalGeral)+' registros</b> consolidados por Contrato + CPF.</span>' +
+      '<span class="cb-text">' + (c.dataBaseAnterior
+        ? 'Consolidação rodada em <b>'+fmtDate(c.dataBaseAtual)+'</b>: base de '+fmtDate(c.dataBaseAnterior)+' (<b>'+fmtInt(c.baseAnteriorTotal)+'</b>) + extração nova (<b>'+fmtInt(c.planilhaNovaTotal)+'</b>) → <b>'+fmtInt(AGG.totalGeral)+' registros</b> consolidados por Contrato + CPF.'
+        : 'Primeira carga deste programa, com dados de <b>'+fmtDate(c.dataBaseAtual)+'</b>: extração com <b>'+fmtInt(c.planilhaNovaTotal)+'</b> registros → <b>'+fmtInt(AGG.totalGeral)+' registros</b> consolidados por Contrato + CPF.') +
+        periodoHtml + '</span>' +
       '<span class="cb-stats">' +
         '<span class="cb-stat"><span class="n">'+fmtInt(c.novos)+'</span><span class="l">Novos</span></span>' +
         '<span class="cb-stat"><span class="n">'+fmtInt(c.mudouSituacao)+'</span><span class="l">Mudaram situação</span></span>' +

@@ -200,3 +200,6 @@ a.programa-cartao:focus-visible { outline: 2px solid var(--accent-ring); outline
 .estagio-legenda { margin-top: 12px; }
 .estagio-legenda .interpret-body p { margin: 0 0 8px; }
 .estagio-legenda .interpret-body p:last-child { margin-bottom: 0; }
+
+/* filtro por empresa no gráfico de rescisão do estágio */
+.estagio-filtro { width: 100%; box-sizing: border-box; margin: 10px 0 4px; }

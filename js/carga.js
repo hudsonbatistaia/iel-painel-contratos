@@ -130,6 +130,7 @@
       (r.problemas.length ? ' · ' + fmtInt(r.problemas.length) + ' aviso(s) abaixo' : ' · nenhum problema encontrado'), r.linhas.length ? 'ok' : 'erro');
     mostrarProblemas(r.problemas);
     mostrarGrafias();
+    if (r.linhas.length) sugerirPeriodo();
     $('botoesPrevia').hidden = !r.linhas.length;
   }
 
@@ -174,7 +175,35 @@
       (problemas.length ? ' · ' + fmtInt(problemas.length) + ' aviso(s) abaixo' : ' · nenhum problema encontrado'), 'ok');
     mostrarProblemas(problemas);
     mostrarGrafias();
+    sugerirPeriodo();
     $('botoesPrevia').hidden = false;
+  }
+
+  /* Período da extração: tenta tirar do nome do arquivo (ex.: "Geral - 01-01-2020 30-09-26.xlsx");
+     se não der, usa do contrato mais antigo da planilha até a data de referência. Fica editável. */
+  function datasDoNome(nome) {
+    var out = [], m, re = /(\d{1,2})[-.](\d{1,2})[-.](\d{4}|\d{2})(?!\d)/g;
+    while ((m = re.exec(nome || ''))) {
+      var a = m[3].length === 2 ? '20' + m[3] : m[3], mes = +m[2], dia = +m[1];
+      if (mes >= 1 && mes <= 12 && dia >= 1 && dia <= 31) out.push(a + '-' + String(mes).padStart(2, '0') + '-' + String(dia).padStart(2, '0'));
+    }
+    return out;
+  }
+  function sugerirPeriodo() {
+    var nomeArq = estado.arquivo ? estado.arquivo.name : '';
+    var doNome = datasDoNome(nomeArq);
+    var inicios = [];
+    estado.partes.forEach(function (pt) { pt.linhas.forEach(function (l) { if (l.inicio) inicios.push(l.inicio); }); });
+    inicios.sort();
+    var maisAntigo = inicios[0] || '';
+    var ini, fim, origem;
+    if (doNome.length >= 2) { ini = doNome[0]; fim = doNome[doNome.length - 1]; origem = 'pelo nome do arquivo'; }
+    else if (doNome.length === 1) { ini = maisAntigo; fim = doNome[0]; origem = 'o fim pelo nome do arquivo e o início pelo contrato mais antigo da planilha'; }
+    else { ini = maisAntigo; fim = $('dataReferencia').value; origem = 'pelo contrato mais antigo da planilha até a data de referência'; }
+    if (doNome.length) $('dataReferencia').value = fim; // a data dos dados é o fim da extração
+    $('periodoInicio').value = ini || '';
+    $('periodoFim').value = fim || '';
+    msg('periodoDica', 'Período sugerido ' + origem + '. Confira e corrija se a extração foi feita com outro período.', 'ok');
   }
 
   function mostrarProblemas(problemas) {
@@ -249,12 +278,16 @@
     });
     var data = $('dataReferencia').value;
     if (!data) throw new Error('Informe a data de referência dos dados (passo 1).');
+    var pIni = $('periodoInicio').value || null, pFim = $('periodoFim').value || null;
+    if (!estado.baseInicial && (!pIni || !pFim)) throw new Error('Informe o período da extração, de e até (passo 1).');
+    if (pIni && pFim && pIni > pFim) throw new Error('No período da extração, a data "de" está depois da data "até" (passo 1).');
     var comum = {
       p_tipo: estado.baseInicial ? 'inicial' : tipoEscolhido(),
       p_data_referencia: data,
       p_arquivo: estado.arquivo ? estado.arquivo.name : null,
       p_aplicar: aplicar
     };
+    if (pIni && pFim) { comum.p_periodo_inicio = pIni; comum.p_periodo_fim = pFim; } // sem período: o banco grava vazio
     if (ambos()) {
       return { funcao: 'processar_carga_ambos', params: Object.assign(comum, {
         p_aprendiz: linhas[0], p_estagio: linhas[1], p_grafias_aprendiz: decisoes[0], p_grafias_estagio: decisoes[1] }) };
@@ -388,11 +421,11 @@
     var ativasP = cargas.filter(function (c) { return !c.desfeita_em; });
     $('tabelaCargas').innerHTML = cargas.length ? cargas.map(function (c) {
       var r = c.resumo || {};
-      return '<tr' + (c.desfeita_em ? ' style="opacity:.55"' : '') + '><td>' + esc(fmtData(c.data_referencia)) + '</td><td>' + esc(ROTULO_TIPO[c.tipo] || c.tipo) +
+      return '<tr' + (c.desfeita_em ? ' style="opacity:.55"' : '') + '><td>' + esc(fmtData(c.data_referencia)) + '</td><td>' + (c.periodo_inicio ? esc(fmtData(c.periodo_inicio) + ' a ' + fmtData(c.periodo_fim)) : '—') + '</td><td>' + esc(ROTULO_TIPO[c.tipo] || c.tipo) +
         '</td><td>' + esc(c.arquivo || '—') + '</td><td>' + esc(fmtDataHora(c.criado_em)) + (c.por ? ' · ' + esc(c.por) : '') +
         '</td><td>' + fmtInt(r.novos) + '</td><td>' + fmtInt(r.mudouSituacao) + '</td><td>' + fmtInt(r.excluidos) +
         '</td><td>' + (c.desfeita_em ? 'desfeita em ' + esc(fmtDataHora(c.desfeita_em)) : '') + '</td></tr>';
-    }).join('') : '<tr><td colspan="8">Nenhuma carga do ' + esc(nome) + ' ainda.' +
+    }).join('') : '<tr><td colspan="9">Nenhuma carga do ' + esc(nome) + ' ainda.' +
       (estado.programa === 'aprendiz' ? ' Comece pela base inicial (arquivo base-inicial.json).' : ' Comece pela extração completa.') + '</td></tr>';
     $('btnDesfazer').hidden = !ativasP.length;
     if (ativasP.length) {
@@ -457,6 +490,8 @@
     r.addEventListener('change', function () { if (r.checked) trocarPrograma(r.value); });
   });
   $('dataReferencia').addEventListener('change', limparPrevia);
+  $('periodoInicio').addEventListener('change', limparPrevia);
+  $('periodoFim').addEventListener('change', limparPrevia);
   $('btnPrevia').addEventListener('click', verPrevia);
   $('btnConfirmar').addEventListener('click', confirmar);
   $('btnCancelar').addEventListener('click', function () { $('btnCancelar').textContent = 'Cancelar'; $('btnConfirmar').hidden = false; $('btnConfirmar').disabled = false; limparTudo(); window.scrollTo(0, 0); });

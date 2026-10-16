@@ -7,9 +7,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.3.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.3.1">
-<script src="js/tema.js?v=2.3.0"></script>
+<link rel="stylesheet" href="css/painel.css?v=2.3.2">
+<link rel="stylesheet" href="css/acesso.css?v=2.3.2">
+<script src="js/tema.js?v=2.3.2"></script>
 </head>
 <body class="carregando">
 
@@ -538,6 +538,7 @@
     <div class="card chart-card">
       <h3>Rescisão antecipada por curso</h3>
       <p class="chart-sub" id="estRescisaoSub">Rescindidos ÷ (rescindidos + concluídos)</p>
+      <select class="input estagio-filtro" id="estRescisaoEmpresa" aria-label="Filtrar por empresa"><option value="">Todas as empresas</option></select>
       <div class="chart-body"><div class="bar-list" id="estRescisao"></div></div>
     </div>
   </div>
@@ -701,12 +702,12 @@
 </div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script src="js/config.js?v=2.3.0"></script>
-<script src="js/acesso.js?v=2.3.0"></script>
-<script src="js/agregados.js?v=2.3.0"></script>
-<script src="js/painel.js?v=2.3.0"></script>
-<script src="js/programas.js?v=2.3.0"></script>
-<script src="js/estagio.js?v=2.3.1"></script>
-<script src="js/entrada.js?v=2.3.0"></script>
+<script src="js/config.js?v=2.3.2"></script>
+<script src="js/acesso.js?v=2.3.2"></script>
+<script src="js/agregados.js?v=2.3.2"></script>
+<script src="js/painel.js?v=2.3.2"></script>
+<script src="js/programas.js?v=2.3.2"></script>
+<script src="js/estagio.js?v=2.3.2"></script>
+<script src="js/entrada.js?v=2.3.2"></script>
 </body>
 </html>
