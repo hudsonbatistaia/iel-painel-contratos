@@ -244,6 +244,7 @@ window.iniciarEstagio = function (RECORDS) {
     .sort(function (a, b) { return b.valor - a.valor || b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'); });
   G.ranking('estProrrogacoes').mostrar(prorrogacoes, {
     rotulo: 'empresas', vazio: 'Nenhuma empresa com ' + MIN_PROR + ' contratos ou mais.',
+    aoClicar: function (nome) { if (window.Carteira) window.Carteira.abrirFicha(nome); },
     csv: { nome: 'estagio_prorrogacoes_por_empresa.csv', cabecalho: ['Empresa', '% com prorrogação', 'Contratos com termo aditivo', 'Total de contratos'],
            linhas: function () { return prorrogacoes.map(function (l) { return [l.nome, String(Math.round(l.valor * 10) / 10).replace('.', ','), l.com, l.total]; }); } }
   });
@@ -252,24 +253,40 @@ window.iniciarEstagio = function (RECORDS) {
     (pp ? '<p><b>Exemplo:</b> ' + esc(pp.nome) + ' — ' + esc(pp.texto) + ': de ' + fmtInt(pp.total) + ' contratos dessa empresa, ' + fmtInt(pp.com) + (pp.com === 1 ? ' foi prorrogado' : ' foram prorrogados') + '.</p>' : '') +
     '<p>Entram todas as situações, menos cancelados, e só empresas com ' + MIN_PROR + ' contratos ou mais.</p>';
 
-  // rescisão antecipada por curso ou por empresa, em páginas de 10
-  var MIN_RESC = { curso: 20, empresa: 10 };
-  var GRUPO_RESC = { curso: { de: 'do curso', muitos: 'cursos' }, empresa: { de: 'da empresa', muitos: 'empresas' } };
+  // rescisão antecipada por curso, empresa, instituição ou faixa de bolsa, em páginas de 10
+  var MIN_RESC = { curso: 20, empresa: 10, instituicao: 20, bolsa: 20 };
+  var GRUPO_RESC = { curso: { de: 'do curso', muitos: 'cursos' }, empresa: { de: 'da empresa', muitos: 'empresas' },
+                     instituicao: { de: 'da instituição', muitos: 'instituições' }, bolsa: { de: 'da faixa de bolsa', muitos: 'faixas de bolsa' } };
+  var COLUNA_RESC = { curso: 'Curso', empresa: 'Empresa', instituicao: 'Instituição de ensino', bolsa: 'Faixa de bolsa' };
+  function faixaDeBolsa(r) {
+    var b = ex(r).bolsa; if (!(b > 0)) return null;
+    for (var i = 0; i < FAIXAS_BOLSA.length; i++) if (b >= FAIXAS_BOLSA[i][0] && b < FAIXAS_BOLSA[i][1]) return FAIXAS_BOLSA[i][2];
+    return null;
+  }
+  // faixas de bolsa em ordem de valor, não pela taxa
+  var ORDEM_FAIXAS = FAIXAS_BOLSA.map(function (f) { return f[2]; });
+  var ORDEM_RESC = { bolsa: function (a, b) { return ORDEM_FAIXAS.indexOf(a.nome) - ORDEM_FAIXAS.indexOf(b.nome); } };
   var baseResc = G.baseDeRescisao(RECORDS);   // rescindidos + concluídos (contratos que já terminaram)
   var mediaGeral = G.taxaGeral(baseResc);
-  var RESC_POR = { curso: function (r) { return r.funcao; }, empresa: function (r) { return r.empresa; } };
+  var RESC_POR = { curso: function (r) { return r.funcao; }, empresa: function (r) { return r.empresa; },
+                   instituicao: function (r) { return r.instituicao || 'Não informada'; }, bolsa: faixaDeBolsa };
   var rescAtual = 'curso';
   var rankingResc = G.ranking('estRescisao');
   function desenharRescisao() {
-    var lista = G.taxasDeRescisao(baseResc, RESC_POR[rescAtual], MIN_RESC[rescAtual]);
+    var lista = G.taxasDeRescisao(baseResc, RESC_POR[rescAtual], MIN_RESC[rescAtual], ORDEM_RESC[rescAtual]);
     rankingResc.mostrar(lista, {
       rotulo: GRUPO_RESC[rescAtual].muitos,
-      vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos encerrados ou mais.',
+      vazio: rescAtual === 'bolsa' ? 'Sem bolsas informadas: carregue de novo a extração do estágio.' : 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos encerrados ou mais.',
+      aoClicar: rescAtual === 'empresa' ? function (nome) { if (window.Carteira) window.Carteira.abrirFicha(nome); } : null,
       csv: { nome: 'estagio_rescisao_por_' + rescAtual + '.csv',
-             cabecalho: [rescAtual === 'curso' ? 'Curso' : 'Empresa', '% rescindidos', 'Rescindidos', 'Concluídos', 'Total que já terminou'],
+             cabecalho: [COLUNA_RESC[rescAtual], '% rescindidos', 'Rescindidos', 'Concluídos', 'Total que já terminou'],
              linhas: function () { return G.csvRescisao(lista); } }
     });
-    $('estRescisaoLeitura').innerHTML = G.leituraRescisao(lista[0], GRUPO_RESC[rescAtual], mediaGeral, MIN_RESC[rescAtual]);
+    // na faixa de bolsa, o "exemplo" é a faixa com a maior taxa (a lista vem em ordem de valor)
+    var exemplo = rescAtual === 'bolsa' ? lista.slice().sort(function (a, b) { return b.valor - a.valor; })[0] : lista[0];
+    $('estRescisaoLeitura').innerHTML = G.leituraRescisao(exemplo, GRUPO_RESC[rescAtual], mediaGeral, MIN_RESC[rescAtual]) +
+      (rescAtual === 'bolsa' ? '<p><b>Cuidado na leitura:</b> aqui a rescisão costuma <b>subir</b> com a bolsa. Isso não quer dizer que bolsa alta afaste o estudante: ' +
+        'pode ser saída para emprego ou efetivação, ou o perfil das empresas que pagam mais. A extração não traz o motivo da rescisão. Faixas em ordem de valor; a bolsa é a do último termo do contrato.</p>' : '');
     document.querySelectorAll('#estRescisaoChips .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-por') === rescAtual); });
   }
   $('estRescisaoSub').textContent = 'Dos contratos que já terminaram, quantos foram rescindidos antes do prazo · média geral ' + fmtPct(mediaGeral);
@@ -293,4 +310,7 @@ window.iniciarEstagio = function (RECORDS) {
   barras('estFormaturas', meses.map(function (k) {
     return { nome: MESES[+k.slice(5, 7) - 1] + '/' + k.slice(0, 4), valor: form[k] || 0, texto: fmtInt(form[k] || 0) };
   }));
+
+  // as listas dos alertas também alimentam a ficha da empresa (carteira.js)
+  return { limite2: limite2, recesso: recesso, formatura: formatura, jornada: jornada };
 };

@@ -106,6 +106,7 @@ window.iniciarAprendiz = function (RECORDS) {
     rankingResc.mostrar(lista, {
       rotulo: GRUPO_RESC[rescAtual].muitos,
       vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos encerrados ou mais.',
+      aoClicar: rescAtual === 'empresa' ? function (nome) { if (window.Carteira) window.Carteira.abrirFicha(nome); } : null,
       csv: { nome: 'jovem_aprendiz_rescisao_por_' + rescAtual + '.csv',
              cabecalho: [rescAtual === 'funcao' ? 'Função' : 'Empresa', '% rescindidos', 'Rescindidos', 'Concluídos', 'Total que já terminou'],
              linhas: function () { return G.csvRescisao(lista); } }

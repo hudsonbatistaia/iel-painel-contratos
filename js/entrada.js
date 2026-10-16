@@ -193,8 +193,9 @@
     var registros = neutralizarRegistros(dados.records);
     mostrar('painel');
     window.iniciarPainel(registros, window.calcularAgregados(registros, cons), { programa: programa, rotulos: info.rotulos, faixasEtarias: info.faixasEtarias });
-    if (programa === 'estagio') window.iniciarEstagio(registros);
+    var alertasEstagio = programa === 'estagio' ? window.iniciarEstagio(registros) : null;
     if (programa === 'aprendiz') window.iniciarAprendiz(registros);
+    window.iniciarCarteira(registros, { programa: programa, rotulos: info.rotulos, alertas: alertasEstagio });
   }
 
   $('formEntrar').addEventListener('submit', async function (ev) {

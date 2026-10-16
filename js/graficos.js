@@ -33,12 +33,14 @@ window.Graficos = (function () {
 
   /* linhas: [{ nome, valor, texto }]. maxRef: valor que vale 100% da barra (numa lista
      paginada, o maior de TODA a lista, para as páginas seguintes não se esticarem). */
-  function barras(id, linhas, vazio, maxRef, destacarPrimeira) {
+  /* clicavel: true deixa cada linha clicável (ex.: abrir a ficha da empresa); o clique é
+     tratado por quem chamou, lendo data-nome da linha */
+  function barras(id, linhas, vazio, maxRef, destacarPrimeira, clicavel) {
     var el = $(id);
     if (!linhas.length) { el.innerHTML = '<p class="estagio-vazio">' + esc(vazio || 'Sem dados suficientes.') + '</p>'; return; }
     var max = maxRef || Math.max.apply(null, linhas.map(function (l) { return l.valor; })) || 1;
     el.innerHTML = linhas.map(function (l, i) {
-      return '<div class="bar-row' + (i === 0 && destacarPrimeira !== false ? ' top' : '') + '">' +
+      return '<div class="bar-row' + (i === 0 && destacarPrimeira !== false ? ' top' : '') + (clicavel ? ' clicavel" role="button" tabindex="0" title="Ver a ficha de ' + esc(l.nome) + '" data-nome="' + esc(l.nome) : '') + '">' +
         '<span class="name" title="' + esc(l.nome) + '"><span class="name-text">' + esc(l.nome) + '</span></span>' +
         '<span class="bar-track"><span class="bar-fill" style="width:' + Math.min(100, l.valor / max * 100).toFixed(1) + '%"></span></span>' +
         '<span class="val">' + esc(l.texto) + '</span></div>';
@@ -50,12 +52,12 @@ window.Graficos = (function () {
      prefixo+'Next', prefixo+'Excel' e prefixo+'Faixa' ("Mostrando 1–10 de 42 cursos"). */
   function ranking(prefixo, porPagina) {
     porPagina = porPagina || 10;
-    var linhas = [], pagina = 0, vazio = '', rotulo = 'itens', csv = null;
+    var linhas = [], pagina = 0, vazio = '', rotulo = 'itens', csv = null, aoClicar = null;
     function desenhar() {
       var total = Math.max(1, Math.ceil(linhas.length / porPagina));
       pagina = Math.min(Math.max(pagina, 0), total - 1);
       var ini = pagina * porPagina, pag = linhas.slice(ini, ini + porPagina);
-      barras(prefixo, pag, vazio, linhas.length ? Math.max.apply(null, linhas.map(function (l) { return l.valor; })) : 0, pagina === 0);
+      barras(prefixo, pag, vazio, linhas.length ? Math.max.apply(null, linhas.map(function (l) { return l.valor; })) : 0, pagina === 0, !!aoClicar);
       var sel = $(prefixo + 'Pagina');
       if (sel.getAttribute('data-total') !== String(total)) {
         sel.innerHTML = '';
@@ -74,14 +76,23 @@ window.Graficos = (function () {
     $(prefixo + 'Next').addEventListener('click', function () { pagina++; desenhar(); });
     $(prefixo + 'Pagina').addEventListener('change', function () { pagina = +this.value; desenhar(); });
     $(prefixo + 'Excel').addEventListener('click', function () { if (csv) baixarCsv(csv.nome, csv.cabecalho, csv.linhas()); });
+    aoClicarLinha($(prefixo), function (nome) { if (aoClicar) aoClicar(nome); });
     return {
-      // opcoes: { vazio, rotulo ('cursos', 'empresas'...), csv: { nome, cabecalho, linhas: function } }
+      // opcoes: { vazio, rotulo ('cursos', 'empresas'...), csv: { nome, cabecalho, linhas: function },
+      //           aoClicar: function(nome) — torna as linhas clicáveis }
       mostrar: function (novas, opcoes) {
         linhas = novas; pagina = 0;
-        vazio = opcoes.vazio || ''; rotulo = opcoes.rotulo || 'itens'; csv = opcoes.csv || null;
+        vazio = opcoes.vazio || ''; rotulo = opcoes.rotulo || 'itens'; csv = opcoes.csv || null; aoClicar = opcoes.aoClicar || null;
         desenhar();
       }
     };
+  }
+
+  // clique (ou Enter) numa linha clicável de um gráfico de barras
+  function aoClicarLinha(el, fn) {
+    function achar(ev) { var l = ev.target.closest('.bar-row.clicavel'); return l && el.contains(l) ? l.getAttribute('data-nome') : null; }
+    el.addEventListener('click', function (ev) { var n = achar(ev); if (n != null) fn(n); });
+    el.addEventListener('keydown', function (ev) { if (ev.key !== 'Enter') return; var n = achar(ev); if (n != null) fn(n); });
   }
 
   /* Taxa de rescisão antecipada = rescindidos ÷ contratos que já terminaram
@@ -96,11 +107,13 @@ window.Graficos = (function () {
     var n = base.filter(function (r) { return r.situacao === 'Rescindido'; }).length;
     return base.length ? n / base.length * 100 : 0;
   }
-  // por grupo (curso, função, empresa); grupos com menos de "minimo" contratos ficam de fora
-  function taxasDeRescisao(base, chave, minimo) {
+  // por grupo (curso, função, empresa); grupos com menos de "minimo" ficam de fora.
+  // ordem: função de ordenação própria (ex.: faixas de bolsa em ordem de valor); padrão = maior taxa
+  function taxasDeRescisao(base, chave, minimo, ordem) {
     var g = {};
     base.forEach(function (r) {
-      var k = chave(r); var c = g[k] = g[k] || { t: 0, r: 0 }; c.t++;
+      var k = chave(r); if (k == null) return;
+      var c = g[k] = g[k] || { t: 0, r: 0 }; c.t++;
       if (r.situacao === 'Rescindido') c.r++;
     });
     return Object.keys(g).filter(function (k) { return g[k].t >= minimo; })
@@ -110,7 +123,7 @@ window.Graficos = (function () {
                  texto: fmtPct(c.r / c.t * 100) + ' (' + fmtInt(c.r) + ' de ' + fmtInt(c.t) + ')' };
       })
       // empate na taxa: o grupo com mais contratos vem antes (o número é mais confiável)
-      .sort(function (a, b) { return b.valor - a.valor || b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'); });
+      .sort(ordem || function (a, b) { return b.valor - a.valor || b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'); });
   }
   // linhas do Excel da rescisão: nome, %, rescindidos, concluídos, total que já terminou
   function csvRescisao(lista) {
@@ -134,5 +147,5 @@ window.Graficos = (function () {
     return html;
   }
 
-  return { esc: esc, fmtInt: fmtInt, fmtPct: fmtPct, avisar: avisar, baixarCsv: baixarCsv, barras: barras, ranking: ranking, baseDeRescisao: baseDeRescisao, taxaGeral: taxaGeral, taxasDeRescisao: taxasDeRescisao, csvRescisao: csvRescisao, leituraRescisao: leituraRescisao };
+  return { esc: esc, fmtInt: fmtInt, fmtPct: fmtPct, avisar: avisar, baixarCsv: baixarCsv, barras: barras, ranking: ranking, aoClicarLinha: aoClicarLinha, baseDeRescisao: baseDeRescisao, taxaGeral: taxaGeral, taxasDeRescisao: taxasDeRescisao, csvRescisao: csvRescisao, leituraRescisao: leituraRescisao };
 })();

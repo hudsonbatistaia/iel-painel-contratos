@@ -7,9 +7,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.4.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.4.4">
-<script src="js/tema.js?v=2.4.0"></script>
+<link rel="stylesheet" href="css/painel.css?v=2.5.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.5.0">
+<script src="js/tema.js?v=2.5.0"></script>
 </head>
 <body class="carregando">
 
@@ -171,6 +171,21 @@
     </div>
   </div>
 
+  <!-- FICHA DA EMPRESA (v2.5, os dois programas) -->
+  <div class="section" id="fichaEmpresa">
+    <div class="card ficha-busca">
+      <label class="ficha-titulo" for="fichaBusca">🏢 Ficha da empresa</label>
+      <div class="ficha-busca-linha">
+        <input class="input" id="fichaBusca" list="fichaEmpresas" placeholder="Digite o nome da empresa…" autocomplete="off">
+        <datalist id="fichaEmpresas"></datalist>
+        <button class="acesso-botao" id="fichaAbrir" type="button">Abrir ficha</button>
+      </div>
+      <p class="chart-sub" id="fichaBuscaAjuda"></p>
+      <p class="carga-msg" id="fichaMsg"></p>
+    </div>
+    <div class="card ficha" id="fichaConteudo" hidden></div>
+  </div>
+
   <!-- BLOCO: TENDÊNCIA NO TEMPO -->
   <!-- NOVOS CONTRATOS / NOVAS EMPRESAS POR MÊS (ANO A ANO) -->
   <div class="section grid-3">
@@ -286,6 +301,40 @@
     </div>
   </div>
 
+  <!-- CARTEIRA E EVOLUÇÃO (v2.5, os dois programas) -->
+  <div class="section grid-3">
+    <div class="card chart-card barras-largas">
+      <h3>Concentração da carteira</h3>
+      <p class="chart-sub" id="cartConcSub">—</p>
+      <div class="chart-body"><div class="bar-list" id="cartConc"></div></div>
+      <p class="chart-sub estagio-nota">As 10 empresas com mais contratos ativos · cada linha: ativos (parte do total) · soma acumulada · clique para ver a ficha</p>
+      <details class="interpret-alert estagio-legenda">
+        <summary><span class="icon" aria-hidden="true">💡</span> Como ler este gráfico <span class="chevron" aria-hidden="true">▾</span></summary>
+        <div class="interpret-body" id="cartConcLeitura"></div>
+      </details>
+    </div>
+    <div class="card chart-card barras-largas">
+      <h3>Evolução ano a ano</h3>
+      <div class="chip-group" id="cartEvolChips">
+        <button class="chip on" type="button" data-evol="contratos">Contratos iniciados</button>
+        <button class="chip" type="button" data-evol="empresas">Empresas novas</button>
+      </div>
+      <div class="chart-body"><div class="bar-list" id="cartEvol"></div></div>
+      <p class="chart-sub estagio-nota" id="cartEvolNota"></p>
+    </div>
+  </div>
+  <div class="section">
+    <div class="card chart-card barras-largas">
+      <h3>Pessoas que voltaram</h3>
+      <p class="chart-sub" id="cartVoltaramSub">—</p>
+      <div class="chart-body"><div class="bar-list" id="cartVoltaram"></div></div>
+      <details class="interpret-alert estagio-legenda">
+        <summary><span class="icon" aria-hidden="true">💡</span> Como ler este gráfico <span class="chevron" aria-hidden="true">▾</span></summary>
+        <div class="interpret-body" id="cartVoltaramLeitura"></div>
+      </details>
+    </div>
+  </div>
+
   <!-- BLOCO: RISCOS E AÇÃO -->
   <!-- VENCIMENTOS -->
   <div class="section">
@@ -335,6 +384,65 @@
       </table>
     </div>
     <div class="venc-table-note" id="venceTableNote"></div>
+  </div>
+
+  <!-- CONTRATOS AGUARDANDO ASSINATURA (v2.5, os dois programas) -->
+  <div class="section" id="pendencias">
+    <div class="section-head">
+      <h2>Contratos aguardando assinatura</h2>
+      <div class="chart-card-actions">
+        <span class="hint">Clique num quadro pra ver a lista</span>
+        <button class="export-btn small" id="exportPendencias" type="button" title="Baixa a lista mostrada abaixo em Excel/CSV">⭳ Excel</button>
+      </div>
+    </div>
+    <div class="alert-row cols-4" style="margin-bottom:14px;">
+      <button class="card alert-tile" type="button" data-pend="todos" style="--a-color:var(--status-warning); --a-wash:var(--status-warning-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Aguardando assinatura</span></span>
+        <span class="value" id="pendTotal">—</span>
+      </button>
+      <button class="card alert-tile" type="button" data-pend="vencido" style="--a-color:var(--dias-atencao); --a-wash:var(--venc-a30-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Com a data de início já passada</span></span>
+        <span class="value" id="pendVencido">—</span>
+      </button>
+      <button class="card alert-tile" type="button" data-pend="30" style="--a-color:var(--dias-urgente); --a-wash:var(--status-critical-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Parados há mais de 30 dias</span></span>
+        <span class="value" id="pend30">—</span>
+      </button>
+      <button class="card alert-tile" type="button" data-pend="90" style="--a-color:var(--venc-v90); --a-wash:var(--venc-v90-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Parados há mais de 90 dias</span></span>
+        <span class="value" id="pend90">—</span>
+      </button>
+    </div>
+    <div class="grid-3">
+      <div class="card chart-card barras-largas">
+      <div class="chart-card-head">
+        <div>
+          <h3>Empresas com mais contratos parados</h3>
+          <p class="chart-sub">Na situação escolhida nos quadros acima · clique na empresa para ver a ficha</p>
+        </div>
+        <div class="chart-card-actions">
+          <div class="year-nav">
+            <button class="icon-btn" id="pendEmpresasPrev" type="button" title="Anteriores" disabled>‹</button>
+            <select class="page-select" id="pendEmpresasPagina" aria-label="Ir para página" title="Ir para página"></select>
+            <span class="page-total" id="pendEmpresasTotal">de —</span>
+            <button class="icon-btn" id="pendEmpresasNext" type="button" title="Mais">›</button>
+          </div>
+          <button class="export-btn small" id="pendEmpresasExcel" type="button" title="Baixa a lista completa em Excel/CSV">⭳ Excel</button>
+        </div>
+      </div>
+        <div class="chart-body"><div class="bar-list" id="pendEmpresas"></div></div>
+        <p class="chart-sub estagio-nota" id="pendEmpresasFaixa"></p>
+      </div>
+      <div class="card">
+        <div class="table-wrap pend-tabela">
+          <table>
+            <thead><tr><th id="pendCabPessoa">Aprendiz</th><th>Empresa</th><th>Início previsto</th><th>Atraso</th></tr></thead>
+            <tbody id="pendTabela"></tbody>
+          </table>
+        </div>
+        <div class="venc-table-note" id="pendNota"></div>
+      </div>
+    </div>
   </div>
 
   <!-- BLOCO SÓ DO ESTÁGIO: ALERTAS DA LEI DO ESTÁGIO (v2.3) -->
@@ -599,6 +707,8 @@
       <div class="chip-group" id="estRescisaoChips">
         <button class="chip on" type="button" data-por="curso">Por curso</button>
         <button class="chip" type="button" data-por="empresa">Por empresa</button>
+        <button class="chip" type="button" data-por="instituicao">Por instituição</button>
+        <button class="chip" type="button" data-por="bolsa">Por faixa de bolsa</button>
       </div>
       <div class="chart-body"><div class="bar-list" id="estRescisao"></div></div>
       <p class="chart-sub estagio-nota" id="estRescisaoFaixa"></p>
@@ -799,14 +909,15 @@
 </div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script src="js/config.js?v=2.4.0"></script>
-<script src="js/acesso.js?v=2.4.0"></script>
-<script src="js/agregados.js?v=2.4.0"></script>
-<script src="js/painel.js?v=2.4.0"></script>
-<script src="js/programas.js?v=2.4.0"></script>
-<script src="js/graficos.js?v=2.4.6"></script>
-<script src="js/estagio.js?v=2.4.6"></script>
-<script src="js/aprendiz.js?v=2.4.6"></script>
-<script src="js/entrada.js?v=2.4.0"></script>
+<script src="js/config.js?v=2.5.0"></script>
+<script src="js/acesso.js?v=2.5.0"></script>
+<script src="js/agregados.js?v=2.5.0"></script>
+<script src="js/painel.js?v=2.5.0"></script>
+<script src="js/programas.js?v=2.5.0"></script>
+<script src="js/graficos.js?v=2.5.0"></script>
+<script src="js/estagio.js?v=2.5.0"></script>
+<script src="js/aprendiz.js?v=2.5.0"></script>
+<script src="js/carteira.js?v=2.5.0"></script>
+<script src="js/entrada.js?v=2.5.0"></script>
 </body>
 </html>
