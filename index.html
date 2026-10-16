@@ -7,9 +7,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.3.2">
-<link rel="stylesheet" href="css/acesso.css?v=2.3.2">
-<script src="js/tema.js?v=2.3.2"></script>
+<link rel="stylesheet" href="css/painel.css?v=2.4.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.4.0">
+<script src="js/tema.js?v=2.4.0"></script>
 </head>
 <body class="carregando">
 
@@ -373,6 +373,33 @@
     <div class="venc-table-note" id="estAlertaNota"></div>
   </div>
 
+  <!-- BLOCO SÓ DO APRENDIZ: AULAS TEÓRICAS NO IEL (v2.4) -->
+  <div class="section" id="aprendizAulas" data-so-aprendiz>
+    <div class="section-head">
+      <h2>Aulas teóricas no IEL</h2>
+      <div class="chart-card-actions">
+        <span class="hint">Aprendizes <b>ativos</b> por dia e turno da aula teórica</span>
+        <button class="export-btn small" id="exportAulas" title="Baixa a lista (da célula escolhida, ou todos) em Excel/CSV">⭳ Excel</button>
+      </div>
+    </div>
+    <div class="card aulas-card">
+      <div class="table-wrap"><table class="aulas-grade" id="aulasGrade"></table></div>
+      <div class="aulas-rodape">
+        <p class="chart-sub" id="aulasNota"></p>
+        <button type="button" class="chip aulas-sem" id="aulasSemBtn">Sem horário informado: <b id="aulasSemHorario">—</b></button>
+      </div>
+    </div>
+    <div id="aulasTabelaWrap" hidden>
+      <div class="alert-group-label" id="aulasTabelaTitulo" style="margin-top:14px;"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Aprendiz</th><th>Empresa</th><th>Horário informado</th><th>Encerramento</th></tr></thead>
+          <tbody id="aulasTabela"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- BLOCO: FUNÇÕES / MODALIDADES -->
   <!-- ARCO OCUPACIONAL -->
   <div class="section">
@@ -556,6 +583,21 @@
     </div>
   </div>
 
+  <!-- BLOCO SÓ DO APRENDIZ: RESCISÃO ANTECIPADA POR EMPRESA E POR FUNÇÃO (v2.4) -->
+  <div class="section grid-3" data-so-aprendiz>
+    <div class="card chart-card barras-largas">
+      <h3>Rescisão antecipada por empresa</h3>
+      <p class="chart-sub" id="aprRescisaoEmpresaSub">Rescindidos ÷ (rescindidos + concluídos)</p>
+      <div class="chart-body"><div class="bar-list" id="aprRescisaoEmpresa"></div></div>
+    </div>
+    <div class="card chart-card barras-largas">
+      <h3>Rescisão antecipada por função</h3>
+      <p class="chart-sub" id="aprRescisaoFuncaoSub">Rescindidos ÷ (rescindidos + concluídos)</p>
+      <select class="input estagio-filtro" id="aprRescisaoEmpresaFiltro" aria-label="Filtrar por empresa"><option value="">Todas as empresas</option></select>
+      <div class="chart-body"><div class="bar-list" id="aprRescisaoFuncao"></div></div>
+    </div>
+  </div>
+
   <!-- RESCISÃO ANTECIPADA POR IDADE DE ENTRADA (só aprendiz) -->
   <div class="section" data-so-aprendiz>
     <div class="card chart-card">
@@ -702,12 +744,13 @@
 </div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script src="js/config.js?v=2.3.2"></script>
-<script src="js/acesso.js?v=2.3.2"></script>
-<script src="js/agregados.js?v=2.3.2"></script>
-<script src="js/painel.js?v=2.3.2"></script>
-<script src="js/programas.js?v=2.3.2"></script>
-<script src="js/estagio.js?v=2.3.2"></script>
-<script src="js/entrada.js?v=2.3.2"></script>
+<script src="js/config.js?v=2.4.0"></script>
+<script src="js/acesso.js?v=2.4.0"></script>
+<script src="js/agregados.js?v=2.4.0"></script>
+<script src="js/painel.js?v=2.4.0"></script>
+<script src="js/programas.js?v=2.4.0"></script>
+<script src="js/estagio.js?v=2.4.0"></script>
+<script src="js/aprendiz.js?v=2.4.0"></script>
+<script src="js/entrada.js?v=2.4.0"></script>
 </body>
 </html>

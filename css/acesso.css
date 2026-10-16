@@ -203,3 +203,37 @@ a.programa-cartao:focus-visible { outline: 2px solid var(--accent-ring); outline
 
 /* filtro por empresa no gráfico de rescisão do estágio */
 .estagio-filtro { width: 100%; box-sizing: border-box; margin: 10px 0 4px; }
+
+/* ---------------- seções só do aprendiz (v2.4) ---------------- */
+.barras-largas .bar-row { grid-template-columns: 148px minmax(0, 1fr) auto; }
+.barras-largas .bar-row .val { white-space: nowrap; min-width: 56px; }
+@media (max-width: 560px) { .barras-largas .bar-row { grid-template-columns: 96px minmax(0, 1fr) auto; gap: 8px; } }
+
+/* grade dia × turno das aulas teóricas */
+.aulas-card { padding: 16px 18px; }
+.aulas-grade { width: 100%; border-collapse: separate; border-spacing: 6px; table-layout: fixed; }
+.aulas-grade th { font-size: 12.5px; color: var(--text-secondary); font-weight: 600; text-align: center; padding: 4px; }
+.aulas-grade th[scope="row"] { text-align: left; width: 70px; }
+.aulas-grade td { padding: 0; text-align: center; }
+.aula-cel {
+  width: 100%; min-height: 46px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--border); color: var(--text-primary);
+  font: 700 17px "Archivo", system-ui, sans-serif; font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--accent) calc(var(--nivel, 0) * 55%), var(--surface-1));
+}
+.aula-cel:disabled { cursor: default; color: var(--text-muted); font-weight: 500; }
+.aula-cel:not(:disabled):hover { border-color: var(--accent); }
+.aula-cel.on { outline: 2px solid var(--accent-ring); outline-offset: 1px; border-color: var(--accent); }
+.aula-total { font-weight: 700; color: var(--text-secondary); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.aula-linha-total th, .aula-linha-total td { border-top: 1px solid var(--gridline); padding-top: 6px; }
+.aula-dia-curto { display: none; }
+.aulas-rodape { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.aulas-rodape .chart-sub { margin: 0; }
+.aulas-sem.on { background: var(--accent-wash); border-color: var(--accent-ring); }
+@media (max-width: 560px) {
+  .aula-dia-longo { display: none; }
+  .aula-dia-curto { display: inline; }
+  .aulas-grade { border-spacing: 3px; }
+  .aulas-grade th[scope="row"] { width: 48px; font-size: 11.5px; }
+  .aula-cel { min-height: 40px; font-size: 14px; }
+}

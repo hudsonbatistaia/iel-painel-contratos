@@ -194,6 +194,7 @@
     mostrar('painel');
     window.iniciarPainel(registros, window.calcularAgregados(registros, cons), { programa: programa, rotulos: info.rotulos, faixasEtarias: info.faixasEtarias });
     if (programa === 'estagio') window.iniciarEstagio(registros);
+    if (programa === 'aprendiz') window.iniciarAprendiz(registros);
   }
 
   $('formEntrar').addEventListener('submit', async function (ev) {

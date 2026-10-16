@@ -1853,6 +1853,23 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
     };
     // a faixa de 14 a 24 anos é regra da aprendizagem; não vale para o estágio
     if (OPC.programa === 'estagio') delete ANOMALIES.idade;
+
+    // aprendiz (v2.4): carga horária, fim do curso e horário da aula teórica.
+    // Só entram quando a extração trouxe esses dados (a base inicial antiga não traz).
+    if (OPC.programa === 'aprendiz') {
+      var ativosComExtras = RECORDS.filter(function(r){ return r.situacao === 'Ativo' && r.extras; });
+      if (ativosComExtras.length) {
+        ANOMALIES.semCargaHoraria = {
+          records: ativosComExtras.filter(function(r){ return !(r.extras.ch_semanal > 0); }),
+          label: 'Contrato ativo sem carga horária', hint: 'a extração traz 0 ou vazio em "Carga Horária Semanal"' };
+        ANOMALIES.fimDepoisDoCurso = {
+          records: ativosComExtras.filter(function(r){ return r.extras.previsao_formatura && r.fim && String(r.fim).slice(0, 10) > String(r.extras.previsao_formatura).slice(0, 10); }),
+          label: 'Contrato termina depois do fim previsto do curso', hint: 'encerramento depois da "Previsão de Formatura": o contrato deve acompanhar o curso de aprendizagem' };
+        ANOMALIES.semAulaTeorica = {
+          records: ativosComExtras.filter(function(r){ return !(r.extras.aula_dia && r.extras.aula_turno); }),
+          label: 'Contrato ativo sem horário da aula teórica', hint: 'coluna "Área de Atuação" vazia ou sem dia/turno na extração' };
+      }
+    }
   }
 
   // Igual às outras seções (decisão de 23/08/2026): clique num item filtra
@@ -1872,6 +1889,9 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
     if (key === 'duplicado') return 'contrato ' + r.contrato + ' repetido pra esse CPF';
     if (key === 'excluido') return 'sumiu da última extração';
     if (key === 'indefinido') return 'situação: "' + r.situacao + '"';
+    if (key === 'semCargaHoraria') return 'carga horária: ' + ((r.extras && r.extras.ch_semanal) || 0) + 'h/semana';
+    if (key === 'fimDepoisDoCurso') return 'fim do curso ' + fmtDate(r.extras.previsao_formatura) + ' · contrato até ' + fmtDate(r.fim);
+    if (key === 'semAulaTeorica') return 'sem horário informado';
     return '—';
   }
 
@@ -1942,7 +1962,7 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
     // Ordem fixa original vira só o desempate — a ordem visual é por
     // gravidade (maior contagem primeiro), como pedido: quem tem mais
     // registros pendentes fica no início da fila.
-    var baseOrder = ['idade', 'atraso', 'duplicado', 'excluido', 'indefinido'];
+    var baseOrder = ['idade', 'atraso', 'duplicado', 'excluido', 'indefinido', 'semCargaHoraria', 'fimDepoisDoCurso', 'semAulaTeorica'];
     var order = baseOrder.filter(function(k){ return ANOMALIES[k]; }).sort(function(k1, k2){
       return ANOMALIES[k2].records.length - ANOMALIES[k1].records.length;
     });

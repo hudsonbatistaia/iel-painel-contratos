@@ -95,6 +95,34 @@
     };
   }
 
+  /* Extras do aprendiz: carga horária, fim previsto do curso e o horário da aula
+     teórica no IEL, que a extração do aprendiz traz na coluna "Área de Atuação"
+     (ex.: "De 13:00 às 17:00 no IEL, às sextas"). */
+  var DIAS_SEMANA = [['SEG', 'Segunda'], ['TER', 'Terça'], ['QUA', 'Quarta'], ['QUI', 'Quinta'], ['SEX', 'Sexta'], ['SAB', 'Sábado']];
+  function horarioTeorico(valor) {
+    var t = texto(valor);
+    if (!t) return { aula_teorica: null, aula_dia: null, aula_turno: null };
+    var k = chave(t), dia = null, turno = null;
+    for (var i = 0; i < DIAS_SEMANA.length; i++) {
+      // "QUIINTAS" e outras grafias com letra repetida também valem
+      if (new RegExp('\\b' + DIAS_SEMANA[i][0].split('').join('+') + '+').test(k)) { dia = DIAS_SEMANA[i][1]; break; }
+    }
+    var h = k.match(/(\d{1,2})\s*(?::|H)/);
+    if (h) { var hora = +h[1]; turno = hora < 12 ? 'Manhã' : hora < 18 ? 'Tarde' : 'Noite'; }
+    else if (/MANHA/.test(k)) turno = 'Manhã';
+    else if (/TARDE/.test(k)) turno = 'Tarde';
+    else if (/NOITE/.test(k)) turno = 'Noite';
+    return { aula_teorica: t.slice(0, 120), aula_dia: dia, aula_turno: turno };
+  }
+  function extrasAprendizDe(x) {
+    var prev = data(x[EXTRAS.previsao_formatura]);
+    return Object.assign({
+      ch_semanal: numero(x[EXTRAS.ch_semanal]),
+      ch_diaria: numero(x[EXTRAS.ch_diaria]),
+      previsao_formatura: prev === 'invalida' ? null : prev
+    }, horarioTeorico(x['Área de Atuação']));
+  }
+
   // coluna que diz o programa de cada linha (Jovem Aprendiz, estágio...)
   var COLUNA_TIPO = 'Tipo de Contrato';
   var COLUNA_SEQUENCIA = 'Sequência';
@@ -103,10 +131,12 @@
      dicionario: [{tipo, chave, valor}]
      doPrograma: função(valor de "Tipo de Contrato") -> true se a linha é do
                  programa escolhido. Linhas de outro programa são puladas.
-     opcoes: { extrasEstagio: true } guarda também os campos de EXTRAS
+     opcoes: { extrasEstagio: true } guarda também os campos de EXTRAS;
+             { extrasAprendiz: true } guarda carga horária, fim do curso e aula teórica
      Devolve { linhas, faltandoColunas, problemas, grafiasNovas, outroPrograma, tiposOutros } */
   function interpretar(linhasPlanilha, dicionario, doPrograma, opcoes) {
     var comExtras = !!(opcoes && opcoes.extrasEstagio);
+    var comExtrasAprendiz = !!(opcoes && opcoes.extrasAprendiz);
     var faltandoColunas = [];
     var primeira = linhasPlanilha[0] || {};
     Object.keys(COLUNAS).forEach(function (k) {
@@ -179,6 +209,7 @@
         nasc: nasc === 'invalida' ? null : nasc,
         sequencia: seq ? Number(seq) : null
       };
+      if (comExtrasAprendiz) item.extras = extrasAprendizDe(x);
       if (comExtras) {
         item.extras = extrasDe(x);
         item.extras.aditivos = item.sequencia > 1 ? item.sequencia - 1 : 0;
@@ -216,7 +247,7 @@
       }
 
       aditivosConsolidados += (itens.length - 1);
-      if (consolidado.extras) {
+      if (consolidado.extras && comExtras) {
         // os extras vêm do termo mais recente; aditivos = maior Sequência - 1 (ou nº de termos - 1)
         consolidado.extras = Object.assign({}, maisRecente.extras, { aditivos: Math.max(maisRecente.extras.aditivos, itens.length - 1) });
       }
@@ -248,7 +279,7 @@
     });
   }
 
-  var api = { COLUNAS: COLUNAS, EXTRAS: EXTRAS, COLUNA_TIPO: COLUNA_TIPO, chave: chave, data: data, interpretar: interpretar, aplicarGrafias: aplicarGrafias };
+  var api = { COLUNAS: COLUNAS, EXTRAS: EXTRAS, horarioTeorico: horarioTeorico, COLUNA_TIPO: COLUNA_TIPO, chave: chave, data: data, interpretar: interpretar, aplicarGrafias: aplicarGrafias };
   raiz.Planilha = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
