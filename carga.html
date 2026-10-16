@@ -73,8 +73,11 @@
 
     <!-- 3. grafias novas -->
     <div class="card carga-passo" id="passoGrafias" hidden>
-      <h2>3. Grafias novas</h2>
-      <p>Estes valores ainda não são conhecidos. Escolha como cada um deve aparecer no painel. A escolha fica guardada para as próximas cargas.</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px">
+        <h2 style="margin:0">3. Grafias novas (<span id="contGrafiasNovas">0</span>)</h2>
+        <button class="botao-secundario" type="button" id="btnAceitarTodasGrafias" style="margin:0; padding:6px 14px; font-size:13px">Aceitar todos os nomes sugeridos</button>
+      </div>
+      <p id="textoGrafiasNovas">Estes valores ainda não são conhecidos. Todos já vêm com o nome sugerido. Você pode ajustar individualmente ou aceitar todos para prosseguir.</p>
       <div id="listaGrafias"></div>
     </div>
 

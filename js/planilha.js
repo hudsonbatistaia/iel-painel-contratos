@@ -61,6 +61,7 @@
 
   // coluna que diz o programa de cada linha (Jovem Aprendiz, estágio...)
   var COLUNA_TIPO = 'Tipo de Contrato';
+  var COLUNA_SEQUENCIA = 'Sequência';
 
   /* linhasPlanilha: saída de XLSX.utils.sheet_to_json(..., {defval: null})
      dicionario: [{tipo, chave, valor}]
@@ -80,7 +81,7 @@
     var dic = { funcao: {}, instituicao: {} };
     (dicionario || []).forEach(function (d) { dic[d.tipo][d.chave] = d.valor; });
 
-    var linhas = [], problemas = [], novas = {}, chaves = {};
+    var linhas = [], problemas = [], novas = {}, candidatos = {};
     linhasPlanilha.forEach(function (x, i) {
       var nLinha = x.__linha || i + 2; // linha 1 é o cabeçalho; __linha = linha original quando a planilha foi separada por programa
       var contrato = soDigitos(x[COLUNAS.contrato]);
@@ -126,11 +127,10 @@
         if (v === 'invalida') problemas.push({ linha: nLinha, contrato: contrato, motivo: 'data inválida em "' + COLUNAS[campo] + '" — campo ficará vazio' });
       });
 
-      var k = contrato + '|' + cpf;
-      if (chaves[k]) { problemas.push({ linha: nLinha, contrato: contrato, motivo: 'contrato + CPF repetido (igual à linha ' + chaves[k] + ') — linha ignorada' }); return; }
-      chaves[k] = nLinha;
+      var seq = soDigitos(x[COLUNA_SEQUENCIA]);
 
-      linhas.push({
+      var item = {
+        linha: nLinha,
         contrato: contrato, cpf: cpf, nome: nome, empresa: empresa,
         cnpj: soDigitos(x[COLUNAS.cnpj], 14),
         funcao: funcao || null, curso_original: curso,
@@ -138,8 +138,43 @@
         instituicao: instituicao || null, situacao: situacao,
         inicio: inicio === 'invalida' ? null : inicio,
         fim: fim === 'invalida' ? null : fim,
-        nasc: nasc === 'invalida' ? null : nasc
+        nasc: nasc === 'invalida' ? null : nasc,
+        sequencia: seq ? Number(seq) : null
+      };
+
+      var k = contrato + '|' + cpf;
+      if (!candidatos[k]) candidatos[k] = [];
+      candidatos[k].push(item);
+    });
+
+    var aditivosConsolidados = 0;
+    Object.keys(candidatos).forEach(function (k) {
+      var itens = candidatos[k];
+      if (itens.length === 1) {
+        linhas.push(itens[0]);
+        return;
+      }
+      // Mais de um termo para o mesmo contrato + CPF:
+      // Ordena do mais antigo para o mais recente pela Sequência ou data de término
+      itens.sort(function (a, b) {
+        if (a.sequencia != null && b.sequencia != null) return a.sequencia - b.sequencia;
+        if (a.fim && b.fim) return a.fim.localeCompare(b.fim);
+        return a.linha - b.linha;
       });
+
+      var maisRecente = itens[itens.length - 1];
+      var consolidado = Object.assign({}, maisRecente);
+
+      // A data de início vem do primeiro termo que tiver início válido
+      for (var t = 0; t < itens.length; t++) {
+        if (itens[t].inicio) {
+          consolidado.inicio = itens[t].inicio;
+          break;
+        }
+      }
+
+      aditivosConsolidados += (itens.length - 1);
+      linhas.push(consolidado);
     });
 
     return {
@@ -148,7 +183,8 @@
       problemas: problemas,
       grafiasNovas: Object.keys(novas).map(function (k) { return novas[k]; }),
       outroPrograma: outroPrograma,
-      tiposOutros: Object.keys(tiposOutros)
+      tiposOutros: Object.keys(tiposOutros),
+      aditivosConsolidados: aditivosConsolidados
     };
   }
 

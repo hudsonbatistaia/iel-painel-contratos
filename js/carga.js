@@ -123,8 +123,9 @@
         r.tiposOutros.join(', ') + '. Confira o programa escolhido acima.', 'erro');
       return;
     }
-    estado.partes = [{ programa: estado.programa, linhas: r.linhas, grafiasNovas: r.grafiasNovas }];
+    estado.partes = [{ programa: estado.programa, linhas: r.linhas, grafiasNovas: r.grafiasNovas, aditivosConsolidados: r.aditivosConsolidados }];
     msg('msgLeitura', contratos(r.linhas.length) + ' do ' + info.nome + (r.linhas.length === 1 ? ' lido' : ' lidos') +
+      (r.aditivosConsolidados ? ' · ' + fmtInt(r.aditivosConsolidados) + ' aditivo(s) consolidado(s)' : '') +
       (r.outroPrograma ? ' · ' + fmtInt(r.outroPrograma) + ' linha(s) de outro programa ignorada(s) (' + r.tiposOutros.join(', ') + ')' : '') +
       (r.problemas.length ? ' · ' + fmtInt(r.problemas.length) + ' aviso(s) abaixo' : ' · nenhum problema encontrado'), r.linhas.length ? 'ok' : 'erro');
     mostrarProblemas(r.problemas);
@@ -163,11 +164,13 @@
       var r = window.Planilha.interpretar(grupos[p], estado.dicionarios[p]);
       if (faltamColunas(r)) return;
       r.problemas.forEach(function (pr) { pr.motivo = PR.INFO[p].nome + ': ' + pr.motivo; problemas.push(pr); });
-      partes.push({ programa: p, linhas: r.linhas, grafiasNovas: r.grafiasNovas });
+      partes.push({ programa: p, linhas: r.linhas, grafiasNovas: r.grafiasNovas, aditivosConsolidados: r.aditivosConsolidados });
     }
     problemas.sort(function (a, b) { return a.linha - b.linha; });
     estado.partes = partes;
+    var totalAditivos = partes.reduce(function (soma, pt) { return soma + (pt.aditivosConsolidados || 0); }, 0);
     msg('msgLeitura', 'Lidos: ' + partes.map(function (pt) { return contratos(pt.linhas.length) + ' do ' + PR.INFO[pt.programa].nome; }).join(' e ') +
+      (totalAditivos ? ' · ' + fmtInt(totalAditivos) + ' aditivo(s) consolidado(s)' : '') +
       (problemas.length ? ' · ' + fmtInt(problemas.length) + ' aviso(s) abaixo' : ' · nenhum problema encontrado'), 'ok');
     mostrarProblemas(problemas);
     mostrarGrafias();
@@ -187,7 +190,9 @@
   // grafias novas de todas as partes; data-p / data-i apontam para a parte e a grafia
   function mostrarGrafias() {
     var box = $('listaGrafias'), html = '';
+    var totalGrafias = 0;
     estado.partes.forEach(function (parte, pi) {
+      totalGrafias += parte.grafiasNovas.length;
       parte.grafiasNovas.forEach(function (g, i) {
         var existentes = estado.dicionarios[parte.programa].filter(function (d) { return d.tipo === g.tipo; })
           .map(function (d) { return d.valor; })
@@ -202,6 +207,7 @@
           '</div>';
       });
     });
+    if ($('contGrafiasNovas')) $('contGrafiasNovas').textContent = fmtInt(totalGrafias);
     box.innerHTML = html;
     $('passoGrafias').hidden = !html;
     box.querySelectorAll('.grafia-escolha').forEach(function (sel) {
@@ -211,6 +217,13 @@
       });
     });
     box.querySelectorAll('.grafia-nova').forEach(function (inp) { inp.addEventListener('input', limparPrevia); });
+    var btnAceitar = $('btnAceitarTodasGrafias');
+    if (btnAceitar) {
+      btnAceitar.onclick = function () {
+        $('btnPrevia').focus();
+        $('btnPrevia').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+    }
   }
 
   // decisões de grafia por parte: [[{tipo, chave, valor}], ...]

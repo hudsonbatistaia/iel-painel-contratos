@@ -14,8 +14,8 @@
     estagio: {
       nome: 'Programa de Estágio',
       marca: 'Programa de Estágio IEL',
-      // ainda a confirmar com a extração real do estágio: por ora, tudo o que não é aprendiz
-      tipoContrato: function (v) { return !/aprendiz/i.test(v); },
+      // aceita "Estágio Não Obrigatório até 30h", "Estagio obrigatório", "40h", etc.
+      tipoContrato: function (v) { return /est[aá]gio/i.test(v) || (!/aprendiz/i.test(v) && Boolean(v)); },
       rotulos: { pessoa: 'Estudante', funcao: 'Curso', arquivo: 'estagio', arquivoFuncoes: 'cursos_estagio' }
     }
   };
