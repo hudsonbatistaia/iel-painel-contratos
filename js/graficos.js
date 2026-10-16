@@ -84,11 +84,11 @@ window.Graficos = (function () {
     };
   }
 
-  /* Taxa de rescisão antecipada = rescindidos ÷ todos os contratos que começaram
-     (ativos + rescindidos + concluídos). Cancelados, aguardando assinatura etc. não entram.
-     Antes era rescindidos ÷ (rescindidos + concluídos), que exagerava a taxa: contrato
-     recente só pode estar rescindido, nunca concluído (decisão de 16/10/2026). */
-  var SITUACOES_BASE = ['Ativo', 'Rescindido', 'Concluído'];
+  /* Taxa de rescisão antecipada = rescindidos ÷ contratos que já terminaram
+     (rescindidos + concluídos). Ativos não entram: decisão do Hudson em 16/10/2026
+     ("ativos contamina a análise"). Contrato recente só pode ter terminado por
+     rescisão; o "Como ler" avisa isso. */
+  var SITUACOES_BASE = ['Rescindido', 'Concluído'];
   function baseDeRescisao(registros) {
     return registros.filter(function (r) { return SITUACOES_BASE.indexOf(r.situacao) !== -1; });
   }
@@ -100,37 +100,37 @@ window.Graficos = (function () {
   function taxasDeRescisao(base, chave, minimo) {
     var g = {};
     base.forEach(function (r) {
-      var k = chave(r); var c = g[k] = g[k] || { t: 0, r: 0, a: 0, c: 0 }; c.t++;
-      if (r.situacao === 'Rescindido') c.r++; else if (r.situacao === 'Ativo') c.a++; else c.c++;
+      var k = chave(r); var c = g[k] = g[k] || { t: 0, r: 0 }; c.t++;
+      if (r.situacao === 'Rescindido') c.r++;
     });
     return Object.keys(g).filter(function (k) { return g[k].t >= minimo; })
       .map(function (k) {
         var c = g[k];
-        return { nome: k, valor: c.r / c.t * 100, rescindidos: c.r, ativos: c.a, concluidos: c.c, total: c.t,
+        return { nome: k, valor: c.r / c.t * 100, rescindidos: c.r, concluidos: c.t - c.r, total: c.t,
                  texto: fmtPct(c.r / c.t * 100) + ' (' + fmtInt(c.r) + ' de ' + fmtInt(c.t) + ')' };
       })
       // empate na taxa: o grupo com mais contratos vem antes (o número é mais confiável)
       .sort(function (a, b) { return b.valor - a.valor || b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'); });
   }
-  // linhas do Excel da rescisão: nome, %, rescindidos, ativos, concluídos, total
+  // linhas do Excel da rescisão: nome, %, rescindidos, concluídos, total que já terminou
   function csvRescisao(lista) {
-    return lista.map(function (l) { return [l.nome, String(Math.round(l.valor * 10) / 10).replace('.', ','), l.rescindidos, l.ativos, l.concluidos, l.total]; });
+    return lista.map(function (l) { return [l.nome, String(Math.round(l.valor * 10) / 10).replace('.', ','), l.rescindidos, l.concluidos, l.total]; });
   }
 
   /* Texto do 'Como ler' da rescisão antecipada, com exemplo tirado da primeira linha.
      grupo: { um: 'curso', de: 'do curso', muitos: 'cursos' } */
   function leituraRescisao(primeira, grupo, mediaGeral, minimo) {
-    var html = '<p><b>O que mostra:</b> de todos os contratos que <b>começaram</b>, quantos foram <b>rescindidos antes do prazo</b>. ' +
-      'Entram os ativos, os rescindidos e os concluídos; cancelados e aguardando assinatura ficam de fora.</p>';
+    var html = '<p><b>O que mostra:</b> dos contratos que <b>já terminaram</b>, quantos foram <b>rescindidos antes do prazo</b>. ' +
+      'Entram só os rescindidos e os concluídos; ativos, cancelados e aguardando assinatura ficam de fora.</p>';
     if (primeira) {
       html += '<p><b>Exemplo:</b> ' + esc(primeira.nome) + ' — ' + esc(primeira.texto) + ': dos ' + fmtInt(primeira.total) + ' contratos ' + grupo.de +
-        ', ' + fmtInt(primeira.rescindidos) + (primeira.rescindidos === 1 ? ' foi rescindido' : ' foram rescindidos') + ' antes do prazo, ' +
-        fmtInt(primeira.ativos) + (primeira.ativos === 1 ? ' está ativo' : ' estão ativos') + ' e ' +
-        fmtInt(primeira.concluidos) + (primeira.concluidos === 1 ? ' chegou' : ' chegaram') + ' ao fim do contrato.</p>';
+        ' que já terminaram, ' + fmtInt(primeira.rescindidos) + (primeira.rescindidos === 1 ? ' foi rescindido' : ' foram rescindidos') + ' antes do prazo e ' +
+        (primeira.concluidos ? fmtInt(primeira.concluidos) + (primeira.concluidos === 1 ? ' chegou' : ' chegaram') + ' ao fim do contrato.' : 'nenhum chegou ao fim do contrato.') + '</p>';
     }
     html += '<p><b>Média geral (' + fmtPct(mediaGeral) + '):</b> use como referência. Acima dela, a perda está maior que o normal do programa.</p>' +
-      '<p>Só aparecem ' + grupo.muitos + ' com ' + minimo + ' ou mais contratos, para a porcentagem não ser distorcida por poucos casos.</p>' +
-      '<p><b>Limite da informação:</b> a extração traz só a data <b>prevista</b> de fim, não a data real da rescisão. Por isso não dá para saber há quanto tempo cada rescisão aconteceu.</p>';
+      '<p>Só aparecem ' + grupo.muitos + ' com ' + minimo + ' ou mais contratos que já terminaram, para a porcentagem não ser distorcida por poucos casos.</p>' +
+      '<p><b>Atenção:</b> um contrato recente ainda não teve tempo de chegar ao fim do prazo; se já terminou, foi por rescisão. ' +
+      'Por isso, ' + grupo.muitos + ' com muitos contratos novos tendem a aparecer com taxa mais alta. A extração traz só a data <b>prevista</b> de fim, não a data real da rescisão.</p>';
     return html;
   }
 

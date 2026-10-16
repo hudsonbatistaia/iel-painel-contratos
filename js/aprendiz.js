@@ -96,7 +96,7 @@ window.iniciarAprendiz = function (RECORDS) {
      Igual ao gráfico do estágio, em páginas de 10. */
   var MIN_RESC = { funcao: 10, empresa: 10 };
   var GRUPO_RESC = { funcao: { de: 'da função', muitos: 'funções' }, empresa: { de: 'da empresa', muitos: 'empresas' } };
-  var baseResc = G.baseDeRescisao(RECORDS);   // ativos + rescindidos + concluídos
+  var baseResc = G.baseDeRescisao(RECORDS);   // rescindidos + concluídos (contratos que já terminaram)
   var mediaGeral = G.taxaGeral(baseResc);
   var RESC_POR = { funcao: function (r) { return r.funcao; }, empresa: function (r) { return r.empresa; } };
   var rescAtual = 'funcao';
@@ -105,15 +105,15 @@ window.iniciarAprendiz = function (RECORDS) {
     var lista = G.taxasDeRescisao(baseResc, RESC_POR[rescAtual], MIN_RESC[rescAtual]);
     rankingResc.mostrar(lista, {
       rotulo: GRUPO_RESC[rescAtual].muitos,
-      vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos ou mais.',
+      vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos encerrados ou mais.',
       csv: { nome: 'jovem_aprendiz_rescisao_por_' + rescAtual + '.csv',
-             cabecalho: [rescAtual === 'funcao' ? 'Função' : 'Empresa', '% rescindidos', 'Rescindidos', 'Ativos', 'Concluídos', 'Total de contratos'],
+             cabecalho: [rescAtual === 'funcao' ? 'Função' : 'Empresa', '% rescindidos', 'Rescindidos', 'Concluídos', 'Total que já terminou'],
              linhas: function () { return G.csvRescisao(lista); } }
     });
     $('aprRescisaoLeitura').innerHTML = G.leituraRescisao(lista[0], GRUPO_RESC[rescAtual], mediaGeral, MIN_RESC[rescAtual]);
     document.querySelectorAll('#aprRescisaoChips .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-por') === rescAtual); });
   }
-  $('aprRescisaoSub').textContent = 'De todos os contratos que começaram, quantos foram rescindidos antes do prazo · média geral ' + fmtPct(mediaGeral);
+  $('aprRescisaoSub').textContent = 'Dos contratos que já terminaram, quantos foram rescindidos antes do prazo · média geral ' + fmtPct(mediaGeral);
   document.querySelectorAll('#aprRescisaoChips .chip').forEach(function (c) {
     c.addEventListener('click', function () { rescAtual = c.getAttribute('data-por'); desenharRescisao(); });
   });
