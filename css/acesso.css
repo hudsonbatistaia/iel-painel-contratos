@@ -135,3 +135,52 @@ body.carregando #telaAcesso, body.carregando #painel { display: none; }
 /* notas informativas da última carga (não são alertas) */
 .consolidacao-banner .cb-notas { width: 100%; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12.5px; color: var(--text-secondary); }
 .consolidacao-banner .cb-notas span { color: var(--status-good); }
+
+/* ---------------- tela inicial: escolha do programa (v2.2) ---------------- */
+.inicio { min-height: 100vh; background: var(--page-bg); }
+.inicio-pergunta {
+  font-family: "Archivo", system-ui, sans-serif; font-size: 20px; font-weight: 700;
+  color: var(--text-primary); margin: 0 0 16px;
+}
+.inicio-cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.programa-cartao {
+  display: flex; flex-direction: column; gap: 4px; padding: 22px 24px; text-decoration: none;
+  color: var(--text-primary); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--surface-1); transition: border-color .12s ease, box-shadow .12s ease;
+}
+a.programa-cartao:hover { border-color: var(--accent); box-shadow: 0 6px 18px rgba(15,30,60,0.08); }
+a.programa-cartao:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }
+.programa-nome {
+  font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent);
+}
+.programa-num {
+  font-family: "Archivo", system-ui, sans-serif; font-size: 44px; font-weight: 800; line-height: 1.1;
+  margin-top: 8px; font-variant-numeric: tabular-nums;
+}
+.programa-num-l { font-size: 14px; color: var(--text-secondary); }
+.programa-meta { font-size: 13px; color: var(--text-muted); margin-top: 10px; }
+.programa-ir { margin-top: 14px; font-size: 14px; font-weight: 600; color: var(--accent); }
+.programa-cartao.vazio { border-style: dashed; }
+.programa-cartao.vazio .programa-num { font-size: 22px; color: var(--text-muted); margin-top: 12px; }
+.programa-cartao.vazio .programa-ir { text-decoration: none; align-self: flex-start; }
+.programa-cartao.vazio .programa-ir:hover { text-decoration: underline; }
+
+/* seletor de programa no topo do painel */
+.programa-troca {
+  display: inline-flex; border: 1px solid var(--border-strong); border-radius: 100px; padding: 2px; gap: 2px;
+}
+.programa-opt {
+  font-size: 12.5px; font-weight: 500; color: var(--text-secondary); text-decoration: none;
+  border-radius: 100px; padding: 5px 13px;
+}
+.programa-opt:hover:not(.on) { color: var(--text-primary); }
+.programa-opt.on { background: var(--tab-active-bg); color: #fff; font-weight: 600; }
+.programa-opt:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+
+/* nome do programa no título da tela de carga */
+.carga-programa { color: var(--accent); font-weight: 700; }
+
+/* prévia de "Os dois programas": um bloco por programa */
+.carga-previa-programa { border-top: 1px solid var(--gridline); padding-top: 12px; margin-top: 12px; }
+.carga-previa-programa:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+.carga-previa-programa h3 { font-family: "Archivo", system-ui, sans-serif; font-size: 15px; margin: 0 0 8px; color: var(--accent); }

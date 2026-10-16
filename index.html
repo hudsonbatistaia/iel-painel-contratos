@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
-<title>Painel Analítico de Contratos</title>
+<title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.1.1">
-<link rel="stylesheet" href="css/acesso.css?v=2.1.1">
-<script src="js/tema.js?v=2.1.1"></script>
+<link rel="stylesheet" href="css/painel.css?v=2.2.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.2.0">
+<script src="js/tema.js?v=2.2.0"></script>
 </head>
 <body class="carregando">
 
@@ -18,7 +18,7 @@
   <form class="acesso-cartao" id="formEntrar" autocomplete="on">
     <img class="acesso-logo" src="img/logo-iel.png" alt="IEL">
     <h1>Painel de Contratos</h1>
-    <p class="acesso-sub">Programa Jovem Aprendiz IEL</p>
+    <p class="acesso-sub">Programa Jovem Aprendiz e Programa de Estágio · IEL</p>
     <label for="campoUsuario">Usuário</label>
     <input class="input" id="campoUsuario" name="username" autocomplete="username" required autocapitalize="none" spellcheck="false">
     <label for="campoSenha">Senha</label>
@@ -46,9 +46,37 @@
 <div class="base-vazia" id="baseVazia" hidden>
   <div class="acesso-cartao">
     <h1>Base vazia</h1>
-    <p class="acesso-sub">Ainda não há contratos carregados.</p>
+    <p class="acesso-sub" id="textoBaseVazia">Ainda não há contratos carregados.</p>
     <a class="acesso-botao" id="linkCargaVazia" href="carga.html" hidden>Atualizar base</a>
+    <a class="acesso-link" href="index.html">← Voltar ao início</a>
     <button class="acesso-link" type="button" id="btnSairVazia">Sair</button>
+  </div>
+</div>
+
+<!-- TELA INICIAL: escolha do programa -->
+<div class="inicio" id="telaInicio" hidden>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="topbar-brand">
+        <span class="brand-logo-plate"><img class="brand-logo" src="img/logo-iel.png" alt="Logo IEL-AM" /></span>
+        <div class="brand-divider"></div>
+        <div>
+          <p class="brand-name">IEL Amazonas</p>
+          <h1>Painel de Contratos</h1>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <div class="usuario-barra">
+          <span class="usuario-nome" id="inicioUsuario"></span>
+          <a class="usuario-acao" id="inicioAcessos" href="acessos.html" hidden>Acessos</a>
+          <button class="usuario-acao" id="inicioTrocarSenha" type="button">Trocar senha</button>
+          <button class="usuario-acao" id="inicioSair" type="button">Sair</button>
+        </div>
+      </div>
+    </div>
+    <h2 class="inicio-pergunta">Qual programa você quer acompanhar?</h2>
+    <div class="inicio-cartoes" id="inicioCartoes"></div>
+    <p class="carga-msg erro" id="inicioMsg"></p>
   </div>
 </div>
 
@@ -60,7 +88,7 @@
       <span class="brand-logo-plate"><img class="brand-logo" src="img/logo-iel.png" alt="Logo IEL-AM" /></span>
       <div class="brand-divider"></div>
       <div>
-        <p class="brand-name">Programa Jovem Aprendiz IEL</p>
+        <p class="brand-name" id="marcaPrograma">Programa Jovem Aprendiz IEL</p>
         <h1>Painel Analítico de Contratos</h1>
       </div>
     </div>
@@ -79,6 +107,10 @@
           </div>
         </div>
       </div>
+      <nav class="programa-troca" id="programaTroca" aria-label="Programa">
+        <a class="programa-opt" data-programa="aprendiz" href="index.html?programa=aprendiz">Programa Jovem Aprendiz</a>
+        <a class="programa-opt" data-programa="estagio" href="index.html?programa=estagio">Programa de Estágio</a>
+      </nav>
       <div class="theme-switch" id="themeSwitch" role="group" aria-label="Tema do painel">
         <button class="theme-opt" data-theme-choice="auto" type="button">Auto</button>
         <button class="theme-opt" data-theme-choice="light" type="button">Claro</button>
@@ -87,6 +119,7 @@
       <span id="refDate"></span>
       <div class="usuario-barra" id="usuarioBarra">
         <span class="usuario-nome" id="usuarioNome"></span>
+        <a class="usuario-acao" href="index.html">Início</a>
         <a class="usuario-acao" id="linkCarga" href="carga.html" hidden>Atualizar base</a>
         <a class="usuario-acao" id="linkAcessos" href="acessos.html" hidden>Acessos</a>
         <button class="usuario-acao" id="btnTrocarSenha" type="button">Trocar senha</button>
@@ -296,7 +329,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Aprendiz</th><th>Empresa</th><th>Encerramento</th><th>Dias restantes</th>
+          <th data-estagio="Estudante">Aprendiz</th><th>Empresa</th><th>Encerramento</th><th>Dias restantes</th>
         </tr></thead>
         <tbody id="venceTable"></tbody>
       </table>
@@ -310,8 +343,8 @@
     <div class="card chart-card">
       <div class="chart-card-head">
         <div>
-          <h3>Arco ocupacional</h3>
-          <p class="chart-sub" id="funcaoBarsSub">Curso/atividade normalizado · só contratos ativos</p>
+          <h3 data-estagio="Cursos">Arco ocupacional</h3>
+          <p class="chart-sub" id="funcaoBarsSub" data-estagio="Curso informado na extração · só contratos ativos">Curso/atividade normalizado · só contratos ativos</p>
         </div>
         <div class="chart-card-actions">
           <button class="export-btn small" id="exportFuncoes" title="Baixa a lista completa de funções em Excel/CSV">⭳ Excel</button>
@@ -328,7 +361,7 @@
     <div class="card chart-card">
       <div class="chart-card-head">
         <div>
-          <h3>Empresas por arco ocupacional</h3>
+          <h3 data-estagio="Empresas por curso">Empresas por arco ocupacional</h3>
           <p class="chart-sub" id="empresasPorFuncaoSub">Quais empresas contratam cada modalidade · só contratos ativos</p>
         </div>
         <div class="chart-card-actions">
@@ -350,8 +383,8 @@
     <div class="card chart-card">
       <div class="chart-card-head">
         <div>
-          <h3>Vencimento de contratos por arco ocupacional</h3>
-          <p class="chart-sub" id="vencArcoSub">Selecione uma função pra ver a lista de contratos <b>ativos</b> vencendo nos próximos 90 dias ou já vencidos · calculado a partir da data de hoje</p>
+          <h3 data-estagio="Vencimento de contratos por curso">Vencimento de contratos por arco ocupacional</h3>
+          <p class="chart-sub" id="vencArcoSub" data-estagio="Selecione um curso pra ver a lista de contratos ativos vencendo nos próximos 90 dias ou já vencidos · calculado a partir da data de hoje">Selecione uma função pra ver a lista de contratos <b>ativos</b> vencendo nos próximos 90 dias ou já vencidos · calculado a partir da data de hoje</p>
         </div>
         <div class="chart-card-actions">
           <button class="export-btn small" id="exportVencArco" title="Baixa a lista de contratos vencendo/vencidos da função selecionada em Excel/CSV">⭳ Excel</button>
@@ -362,7 +395,7 @@
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Aprendiz</th><th>Empresa</th><th>Encerramento</th><th>Dias restantes</th>
+            <th data-estagio="Estudante">Aprendiz</th><th>Empresa</th><th>Encerramento</th><th>Dias restantes</th>
           </tr></thead>
           <tbody id="vencArcoTable"></tbody>
         </table>
@@ -375,7 +408,7 @@
   <!-- BLOCO: PERFIL DOS APRENDIZES -->
   <div class="section grid-2">
     <div class="card chart-card">
-      <h3>Faixa etária dos aprendizes</h3>
+      <h3 data-estagio="Faixa etária dos estudantes">Faixa etária dos aprendizes</h3>
       <p class="chart-sub" id="faixaEtariaSub">Idade hoje · só contratos ativos</p>
       <div class="chart-body">
         <div class="bar-list" id="faixaEtariaBars"></div>
@@ -390,8 +423,8 @@
     </div>
   </div>
 
-  <!-- RESCISÃO ANTECIPADA POR IDADE DE ENTRADA -->
-  <div class="section">
+  <!-- RESCISÃO ANTECIPADA POR IDADE DE ENTRADA (só aprendiz) -->
+  <div class="section" data-so-aprendiz>
     <div class="card chart-card">
       <h3>Rescisão antecipada por idade de entrada</h3>
       <p class="chart-sub" id="idadeRescisaoSub">Carregando…</p>
@@ -406,8 +439,8 @@
     </div>
   </div>
 
-  <!-- LIMITE DE IDADE (24 ANOS) -->
-  <div class="section">
+  <!-- LIMITE DE IDADE (24 ANOS) (só aprendiz) -->
+  <div class="section" data-so-aprendiz>
     <div class="section-head">
       <h2>Limite de idade do jovem (24 anos)</h2>
       <button class="export-btn small" id="exportIdade24" title="Baixa a lista mostrada abaixo em Excel/CSV">⭳ Excel</button>
@@ -434,7 +467,7 @@
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Aprendiz</th><th>Empresa</th><th>Completa 24 anos em</th><th>Fim contratado</th><th>Situação</th>
+          <th data-estagio="Estudante">Aprendiz</th><th>Empresa</th><th>Completa 24 anos em</th><th>Fim contratado</th><th>Situação</th>
         </tr></thead>
         <tbody id="idade24Table"></tbody>
       </table>
@@ -456,7 +489,7 @@
     <div class="alert-group-label" style="margin-top:18px;">Registros do item selecionado</div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Aprendiz</th><th>Empresa</th><th>Situação</th><th>Detalhe</th></tr></thead>
+        <thead><tr><th data-estagio="Estudante">Aprendiz</th><th>Empresa</th><th>Situação</th><th>Detalhe</th></tr></thead>
         <tbody id="anomalyTable"></tbody>
       </table>
     </div>
@@ -476,8 +509,8 @@
     </div>
     <div class="table-toolbar">
       <select class="input" id="empresaFilter"><option value="">Todas as empresas</option></select>
-      <select class="input" id="funcaoFilter"><option value="">Todas as funções</option></select>
-      <input class="input" id="search" type="text" placeholder="Buscar por nome, empresa, função ou CPF…" />
+      <select class="input" id="funcaoFilter"><option value="" data-estagio="Todos os cursos">Todas as funções</option></select>
+      <input class="input" id="search" type="text" placeholder="Buscar por nome, empresa, função ou CPF…" data-estagio-placeholder="Buscar por nome, empresa, curso ou CPF…" />
       <div class="toolbar-right">
         <label class="page-size-label" for="pageSizeSelect">Mostrar
           <select class="input" id="pageSizeSelect">
@@ -497,10 +530,10 @@
       <table>
         <thead>
           <tr>
-            <th data-key="nome">Aprendiz <span class="arrow">▾</span></th>
+            <th data-key="nome"><span data-estagio="Estudante">Aprendiz</span> <span class="arrow">▾</span></th>
             <th data-key="empresa">Empresa <span class="arrow">▾</span></th>
             <th data-key="contrato">Contrato <span class="arrow">▾</span></th>
-            <th data-key="funcao">Função <span class="arrow">▾</span></th>
+            <th data-key="funcao"><span data-estagio="Curso">Função</span> <span class="arrow">▾</span></th>
             <th data-key="situacao">Situação <span class="arrow">▾</span></th>
             <th data-key="inicio">Início <span class="arrow">▾</span></th>
             <th data-key="fim">Encerramento <span class="arrow">▾</span></th>
@@ -536,10 +569,11 @@
 </div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script src="js/config.js?v=2.1.1"></script>
-<script src="js/acesso.js?v=2.1.1"></script>
-<script src="js/agregados.js?v=2.1.1"></script>
-<script src="js/painel.js?v=2.1.1"></script>
-<script src="js/entrada.js?v=2.1.1"></script>
+<script src="js/config.js?v=2.2.0"></script>
+<script src="js/acesso.js?v=2.2.0"></script>
+<script src="js/agregados.js?v=2.2.0"></script>
+<script src="js/painel.js?v=2.2.0"></script>
+<script src="js/programas.js?v=2.2.0"></script>
+<script src="js/entrada.js?v=2.2.0"></script>
 </body>
 </html>

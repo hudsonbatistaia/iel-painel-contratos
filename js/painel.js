@@ -1,7 +1,10 @@
 /* Painel (código do protótipo v1). Agora recebe os dados do banco em vez de
-   lê-los de dentro do HTML: chamado por entrada.js depois do login. */
-window.iniciarPainel = function (RECORDS, AGG) {
+   lê-los de dentro do HTML: chamado por entrada.js depois do login.
+   OPC = { programa: 'aprendiz' | 'estagio', rotulos: {...} } (js/programas.js) */
+window.iniciarPainel = function (RECORDS, AGG, OPC) {
   "use strict";
+  OPC = OPC || {};
+  var ROT = OPC.rotulos || { pessoa: 'Aprendiz', funcao: 'Função', arquivo: 'jovem_aprendiz', arquivoFuncoes: 'arco_ocupacional_jovem_aprendiz' };
 
   var STATUS_COLOR = {
     "Ativo":                 { c: "var(--status-good)",     wash: "var(--status-good-wash)" },
@@ -707,13 +710,13 @@ window.iniciarPainel = function (RECORDS, AGG) {
       lines.push([i + 1, e.empresa, e.total, String(e.pct).replace('.', ',') + '%'].map(esc).join(';'));
     });
     var csv = '﻿' + lines.join('\r\n');
-    saveCsvString('ranking_empresas_jovem_aprendiz.csv', csv, fmtInt(all.length) + ' empresas exportadas.');
+    saveCsvString('ranking_empresas_' + ROT.arquivo + '.csv', csv, fmtInt(all.length) + ' empresas exportadas.');
   }
 
   function exportFuncoes() {
     var all = AGG.funcoesCompletas || [];
     if (all.length === 0) { showToast('Nada pra exportar.'); return; }
-    var headers = ['Função', 'Contratos ativos', '% do total ativo'];
+    var headers = [ROT.funcao, 'Contratos ativos', '% do total ativo'];
     function esc(v) {
       v = (v === null || v === undefined) ? '' : String(v);
       if (/[",;\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
@@ -724,7 +727,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
       lines.push([f.funcao, f.total, String(f.pct).replace('.', ',') + '%'].map(esc).join(';'));
     });
     var csv = '﻿' + lines.join('\r\n');
-    saveCsvString('arco_ocupacional_jovem_aprendiz.csv', csv, fmtInt(all.length) + ' funções exportadas.');
+    saveCsvString(ROT.arquivoFuncoes + '.csv', csv, fmtInt(all.length) + ' funções exportadas.');
   }
 
   /* ================= ARCO OCUPACIONAL =================
@@ -896,7 +899,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
     var r = rows[vencArcoTab] || rows[0];
     var itens = (r.itens || []).slice().sort(function(a, b){ return a.dias - b.dias; });
     if (itens.length === 0) { showToast('Nada pra exportar.'); return; }
-    var headers = ['Função', 'Aprendiz', 'Empresa', 'Encerramento', 'Dias'];
+    var headers = [ROT.funcao, ROT.pessoa, 'Empresa', 'Encerramento', 'Dias'];
     function esc(v) {
       v = (v === null || v === undefined) ? '' : String(v);
       if (/[",;\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
@@ -983,7 +986,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
     var f = data.funcoes[funcaoEmpTab];
     var all = f.empresas || [];
     if (all.length === 0) { showToast('Nada pra exportar.'); return; }
-    var headers = ['Função', 'Empresa', 'Contratos ativos'];
+    var headers = [ROT.funcao, 'Empresa', 'Contratos ativos'];
     function esc(v) {
       v = (v === null || v === undefined) ? '' : String(v);
       if (/[",;\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
@@ -1270,7 +1273,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
       lines.push([e.empresa, e.ativosAntes, e.ativosAgora, e.diff].map(esc).join(';'));
     });
     var csv = '﻿' + lines.join('\r\n');
-    saveCsvString('variacao_empresas_jovem_aprendiz.csv', csv, fmtInt(all.length) + ' empresas exportadas.');
+    saveCsvString('variacao_empresas_' + ROT.arquivo + '.csv', csv, fmtInt(all.length) + ' empresas exportadas.');
   }
 
   /* ================= VENCIMENTOS =================
@@ -1386,7 +1389,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
 
   function exportVencimentos() {
     if (vencLocalRows.length === 0) { showToast('Nada pra exportar.'); return; }
-    var headers = ['Aprendiz', 'Empresa', 'CPF', 'Contrato', 'Encerramento', 'Dias'];
+    var headers = [ROT.pessoa, 'Empresa', 'CPF', 'Contrato', 'Encerramento', 'Dias'];
     function esc(v) {
       v = (v === null || v === undefined) ? '' : String(v);
       if (/[",;\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
@@ -1848,6 +1851,8 @@ window.iniciarPainel = function (RECORDS, AGG) {
       excluido:   { records: contratoExcluido, label: 'Contrato Excluído (sumiu de uma extração pra outra)', hint: 'não apareceu na última planilha — checar manualmente o que houve' },
       indefinido: { records: statusIndefinido, label: 'Situação com status ainda não definido', hint: 'apareceu um valor novo no sistema de origem — aguardando confirmação' }
     };
+    // a faixa de 14 a 24 anos é regra da aprendizagem; não vale para o estágio
+    if (OPC.programa === 'estagio') delete ANOMALIES.idade;
   }
 
   // Igual às outras seções (decisão de 23/08/2026): clique num item filtra
@@ -1913,7 +1918,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
   function exportAnomalias() {
     if (anomalyLocalRows.length === 0) { showToast('Nada pra exportar.'); return; }
     var key = anomalyLocal.key;
-    var headers = ['Aprendiz', 'Empresa', 'CPF', 'Contrato', 'Situação', 'Detalhe'];
+    var headers = [ROT.pessoa, 'Empresa', 'CPF', 'Contrato', 'Situação', 'Detalhe'];
     function esc(v) {
       v = (v === null || v === undefined) ? '' : String(v);
       if (/[",;\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
@@ -1938,7 +1943,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
     // gravidade (maior contagem primeiro), como pedido: quem tem mais
     // registros pendentes fica no início da fila.
     var baseOrder = ['idade', 'atraso', 'duplicado', 'excluido', 'indefinido'];
-    var order = baseOrder.slice().sort(function(k1, k2){
+    var order = baseOrder.filter(function(k){ return ANOMALIES[k]; }).sort(function(k1, k2){
       return ANOMALIES[k2].records.length - ANOMALIES[k1].records.length;
     });
     el.innerHTML = order.map(function(key){
@@ -1972,7 +1977,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
   /* ================= EXPORTAÇÃO CSV ================= */
   function toCsv(records) {
     var cols = ['nome','empresa','contrato','cpf','funcao','situacao','inicio','fim','dias'];
-    var headers = ['Aprendiz','Empresa','Contrato','CPF','Função','Situação','Início','Encerramento','Dias p/ vencer'];
+    var headers = [ROT.pessoa,'Empresa','Contrato','CPF',ROT.funcao,'Situação','Início','Encerramento','Dias p/ vencer'];
     function esc(v) {
       v = (v === null || v === undefined) ? '' : String(v);
       if (/[",;\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
@@ -2003,7 +2008,7 @@ window.iniciarPainel = function (RECORDS, AGG) {
   function handleExport() {
     var data = sortRecords(getFiltered());
     if (data.length === 0) { showToast('Nada pra exportar com os filtros atuais.'); return; }
-    var filename = 'contratos_jovem_aprendiz.csv';
+    var filename = 'contratos_' + ROT.arquivo + '.csv';
     if (state.vencimentoWindow) filename = 'vencimentos_' + state.vencimentoWindow + 'dias.csv';
     else if (state.vencidoWindow) filename = 'vencidos_' + state.vencidoWindow + 'dias.csv';
     else if (state.idade24Window) filename = 'limite_24anos_' + state.idade24Window + '.csv';

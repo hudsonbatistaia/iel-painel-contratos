@@ -26,8 +26,8 @@
     if (evento === 'entrada') return 'Entrou no painel';
     if (evento === 'saída') return 'Saiu';
     if (evento === 'troca de senha') return 'Trocou a senha';
-    if ((m = evento.match(/^carga (\d+)$/))) return 'Gravou a carga nº ' + m[1];
-    if ((m = evento.match(/^desfez carga (\d+)$/))) return 'Desfez a carga nº ' + m[1];
+    if ((m = evento.match(/^carga (\d+)( · estágio)?$/))) return 'Gravou a carga nº ' + m[1] + (m[2] ? ' (estágio)' : '');
+    if ((m = evento.match(/^desfez carga (\d+)( · estágio)?$/))) return 'Desfez a carga nº ' + m[1] + (m[2] ? ' (estágio)' : '');
     return evento;
   }
   function categoria(evento) {
@@ -62,11 +62,11 @@
   $('btnSair').addEventListener('click', async function () {
     try { await A.rpc('registrar', { p_evento: 'saída' }); } catch (e) {}
     await A.sair();
-    window.location.href = 'index.html';
+    window.location.href = 'https://portal.hbone.com.br';
   });
 
   (async function iniciar() {
-    if (!(await A.sessaoAtual())) { window.location.href = 'index.html'; return; }
+    if (!(await A.sessaoAtual())) { window.location.href = 'https://portal.hbone.com.br'; return; }
     try {
       var eu = await A.rpc('sessao');
       if (eu.papel !== 'admin') { msg('Esta tela é só para o administrador.', 'erro'); return; }
@@ -79,7 +79,7 @@
       desenhar();
       msg('');
       $('conteudo').hidden = false;
-      A.vigiarInatividade(function () { window.location.href = 'index.html'; });
+      A.vigiarInatividade(function () { window.location.href = 'https://portal.hbone.com.br'; });
     } catch (e) {
       msg(e.message, 'erro');
     }
