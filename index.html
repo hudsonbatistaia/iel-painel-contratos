@@ -588,17 +588,16 @@
   </div>
 
   <!-- BLOCO SÓ DO APRENDIZ: RESCISÃO ANTECIPADA POR EMPRESA E POR FUNÇÃO (v2.4) -->
-  <div class="section grid-3" data-so-aprendiz>
+  <div class="section" data-so-aprendiz>
     <div class="card chart-card barras-largas">
-      <h3>Rescisão antecipada por empresa</h3>
-      <p class="chart-sub" id="aprRescisaoEmpresaSub">Rescindidos ÷ (rescindidos + concluídos)</p>
-      <div class="chart-body"><div class="bar-list" id="aprRescisaoEmpresa"></div></div>
-    </div>
-    <div class="card chart-card barras-largas">
-      <h3>Rescisão antecipada por função</h3>
-      <p class="chart-sub" id="aprRescisaoFuncaoSub">Rescindidos ÷ (rescindidos + concluídos)</p>
-      <select class="input estagio-filtro" id="aprRescisaoEmpresaFiltro" aria-label="Filtrar por empresa"><option value="">Todas as empresas</option></select>
-      <div class="chart-body"><div class="bar-list" id="aprRescisaoFuncao"></div></div>
+      <h3>Rescisão antecipada</h3>
+      <p class="chart-sub" id="aprRescisaoSub">Contratos encerrados antes do prazo</p>
+      <div class="chip-group" id="aprRescisaoChips">
+        <button class="chip on" type="button" data-por="funcao">Por função</button>
+        <button class="chip" type="button" data-por="empresa">Por empresa</button>
+      </div>
+      <div class="chart-body"><div class="bar-list" id="aprRescisao"></div></div>
+      <p class="chart-sub estagio-nota" id="aprRescisaoNota"></p>
     </div>
   </div>
 
@@ -754,7 +753,7 @@
 <script src="js/painel.js?v=2.4.0"></script>
 <script src="js/programas.js?v=2.4.0"></script>
 <script src="js/estagio.js?v=2.4.1"></script>
-<script src="js/aprendiz.js?v=2.4.0"></script>
+<script src="js/aprendiz.js?v=2.4.3"></script>
 <script src="js/entrada.js?v=2.4.0"></script>
 </body>
 </html>

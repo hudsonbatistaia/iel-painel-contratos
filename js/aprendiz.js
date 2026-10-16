@@ -17,11 +17,6 @@ window.iniciarAprendiz = function (RECORDS) {
   function fmtPct(n) { return (Math.round(n * 10) / 10).toLocaleString('pt-BR') + '%'; }
   function fmtData(iso) { if (!iso) return '—'; var p = String(iso).slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
   function ex(r) { return r.extras || {}; }
-  function contar(lista, chave) {
-    var m = {};
-    lista.forEach(function (r) { var k = chave(r); if (k != null) m[k] = (m[k] || 0) + 1; });
-    return m;
-  }
 
   /* barras no mesmo formato visual do painel: [{ nome, valor, texto }] */
   function barras(id, linhas, vazio) {
@@ -129,46 +124,30 @@ window.iniciarAprendiz = function (RECORDS) {
   });
   desenharAulas();
 
-  /* ================= 2. RESCISÃO ANTECIPADA POR EMPRESA E POR FUNÇÃO ================= */
+  /* ================= 2. RESCISÃO ANTECIPADA (por função ou por empresa) =================
+     Igual ao gráfico do estágio: % dos contratos encerrados que terminaram por rescisão.
+     Só entram grupos com contratos encerrados suficientes para a taxa fazer sentido. */
+  var MIN_RESC = { funcao: 10, empresa: 10 };
   var encerrados = RECORDS.filter(function (r) { return r.situacao === 'Rescindido' || r.situacao === 'Concluído'; });
-  function taxa(lista) { var n = lista.filter(function (x) { return x.situacao === 'Rescindido'; }).length; return lista.length ? n / lista.length * 100 : 0; }
-  var mediaGeral = taxa(encerrados);
-  function porGrupo(lista, chave, minimo) {
-    var g = {};
-    lista.forEach(function (r) { var k = chave(r); var c = g[k] = g[k] || { t: 0, r: 0 }; c.t++; if (r.situacao === 'Rescindido') c.r++; });
-    return Object.keys(g).filter(function (k) { return g[k].t >= minimo; })
+  var nResc = encerrados.filter(function (r) { return r.situacao === 'Rescindido'; }).length;
+  var mediaGeral = encerrados.length ? nResc / encerrados.length * 100 : 0;
+  var RESC_POR = { funcao: function (r) { return r.funcao; }, empresa: function (r) { return r.empresa; } };
+  var NOME_GRUPO = { funcao: 'funções', empresa: 'empresas' };
+  var rescAtual = 'funcao';
+  function desenharRescisao() {
+    var min = MIN_RESC[rescAtual], g = {};
+    encerrados.forEach(function (r) { var k = RESC_POR[rescAtual](r); var c = g[k] = g[k] || { t: 0, r: 0 }; c.t++; if (r.situacao === 'Rescindido') c.r++; });
+    barras('aprRescisao', Object.keys(g).filter(function (k) { return g[k].t >= min; })
       .map(function (k) { var c = g[k]; return { nome: k, valor: c.r / c.t * 100, texto: fmtPct(c.r / c.t * 100) + ' · ' + fmtInt(c.r) + ' de ' + fmtInt(c.t) }; })
-      .sort(function (a, b) { return b.valor - a.valor || a.nome.localeCompare(b.nome, 'pt-BR'); });
+      .sort(function (a, b) { return b.valor - a.valor || a.nome.localeCompare(b.nome, 'pt-BR'); }).slice(0, 10),
+      'Nenhum grupo com ' + min + ' contratos encerrados ou mais.');
+    $('aprRescisaoNota').textContent = 'As 10 maiores taxas · só ' + NOME_GRUPO[rescAtual] + ' com ' + min +
+      ' contratos encerrados ou mais · cada linha: taxa · rescindidos de encerrados';
+    document.querySelectorAll('#aprRescisaoChips .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-por') === rescAtual); });
   }
-
-  // por empresa: empresas com pelo menos 10 contratos encerrados
-  var MIN_EMPRESA = 10;
-  var empresas = porGrupo(encerrados, function (r) { return r.empresa; }, MIN_EMPRESA);
-  barras('aprRescisaoEmpresa', empresas.slice(0, 10), 'Nenhuma empresa com ' + MIN_EMPRESA + ' contratos encerrados ou mais.');
-  $('aprRescisaoEmpresaSub').textContent = 'Rescindidos ÷ (rescindidos + concluídos) · média geral ' + fmtPct(mediaGeral) +
-    ' · as 10 maiores taxas entre ' + fmtInt(empresas.length) + ' empresas com ' + MIN_EMPRESA + ' encerrados ou mais';
-
-  // por função, com filtro por empresa (mínimo de encerrados: 10 no geral, 5 numa empresa)
-  var MIN_FUNCAO = 10, MIN_FUNCAO_EMPRESA = 5;
-  function desenharFuncao(empresa) {
-    var lista = empresa ? encerrados.filter(function (r) { return r.empresa === empresa; }) : encerrados;
-    var min = empresa ? MIN_FUNCAO_EMPRESA : MIN_FUNCAO;
-    barras('aprRescisaoFuncao', porGrupo(lista, function (r) { return r.funcao; }, min).slice(0, 10),
-      empresa ? 'Nenhuma função com ' + min + ' contratos encerrados ou mais nesta empresa.' : 'Nenhuma função com ' + min + ' contratos encerrados ou mais.');
-    $('aprRescisaoFuncaoSub').textContent = 'Rescindidos ÷ (rescindidos + concluídos) · ' +
-      (empresa ? 'nesta empresa ' + fmtPct(taxa(lista)) + ' (' + fmtInt(lista.length) + ' encerrados) · média geral ' + fmtPct(mediaGeral)
-               : 'média geral ' + fmtPct(mediaGeral)) +
-      ' · funções com ' + min + ' encerrados ou mais';
-  }
-  var encPorEmpresa = contar(encerrados, function (r) { return r.empresa; });
-  var sel = $('aprRescisaoEmpresaFiltro');
-  Object.keys(encPorEmpresa).filter(function (k) { return encPorEmpresa[k] >= MIN_FUNCAO_EMPRESA; })
-    .sort(function (a, b) { return a.localeCompare(b, 'pt-BR'); })
-    .forEach(function (k) {
-      var o = document.createElement('option');
-      o.value = k; o.textContent = k + ' (' + fmtInt(encPorEmpresa[k]) + ' encerrados)';
-      sel.appendChild(o);
-    });
-  sel.addEventListener('change', function () { desenharFuncao(sel.value); });
-  desenharFuncao('');
+  $('aprRescisaoSub').textContent = 'Contratos encerrados antes do prazo (rescindidos) · média geral ' + fmtPct(mediaGeral);
+  document.querySelectorAll('#aprRescisaoChips .chip').forEach(function (c) {
+    c.addEventListener('click', function () { rescAtual = c.getAttribute('data-por'); desenharRescisao(); });
+  });
+  desenharRescisao();
 };
