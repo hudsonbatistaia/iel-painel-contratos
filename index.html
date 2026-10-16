@@ -8,7 +8,7 @@
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
 <link rel="stylesheet" href="css/painel.css?v=2.3.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.3.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.3.1">
 <script src="js/tema.js?v=2.3.0"></script>
 </head>
 <body class="carregando">
@@ -466,10 +466,12 @@
       <div class="card stat-tile" style="--tile-color:var(--accent); --tile-wash:var(--accent-wash)">
         <span class="dot"></span><span class="label">Bolsa média</span>
         <span class="value" id="estBolsaMedia">—</span>
+        <span class="foot">soma das bolsas ÷ nº de estudantes</span>
       </div>
       <div class="card stat-tile" style="--tile-color:var(--accent); --tile-wash:var(--accent-wash)">
         <span class="dot"></span><span class="label">Bolsa mediana</span>
         <span class="value" id="estBolsaMediana">—</span>
+        <span class="foot">metade dos estudantes ganha até esse valor</span>
       </div>
       <div class="card stat-tile" style="--tile-color:var(--status-pending); --tile-wash:var(--status-pending-wash)">
         <span class="dot"></span><span class="label">Estágios obrigatórios</span>
@@ -482,13 +484,23 @@
         <span class="foot" id="estAditivosSub"></span>
       </div>
     </div>
+    <details class="interpret-alert estagio-legenda">
+      <summary><span class="icon" aria-hidden="true">💡</span> Como ler a bolsa média e a bolsa mediana <span class="chevron" aria-hidden="true">▾</span></summary>
+      <div class="interpret-body">
+        <p><b>Média:</b> soma todas as bolsas e divide pelo número de estudantes. Poucas bolsas muito altas puxam a média para cima.</p>
+        <p><b>Mediana:</b> coloca todas as bolsas em fila, da menor para a maior, e pega a do meio. Metade dos estudantes ganha até esse valor, e a outra metade ganha mais. Bolsas muito altas não mexem nela.</p>
+        <p><b>Exemplo com 5 estudantes</b> (R$ 600, R$ 640, R$ 640, R$ 700 e R$ 3.000): a média é R$ 1.116, puxada pela bolsa de R$ 3.000; a mediana é R$ 640, o valor do meio.</p>
+        <p><b>Qual usar:</b> para saber quanto um estudante costuma ganhar, use a <b>mediana</b>. Para estimar o custo total, use a <b>média</b> (média × número de estudantes).</p>
+        <p id="estBolsaLeitura"></p>
+      </div>
+    </details>
   </div>
 
   <div class="section grid-3" data-so-estagio hidden>
     <div class="card chart-card">
       <div class="chart-card-head"><div>
         <h3>Bolsa média</h3>
-        <p class="chart-sub">As 10 maiores médias · grupos com 5 ou mais estudantes ativos · valor · nº de estudantes</p>
+        <p class="chart-sub">Os 10 grupos com a maior bolsa média · só grupos com 5 ou mais estudantes ativos · cada linha mostra a bolsa média do grupo e, depois do ponto, quantos estudantes ele tem</p>
       </div></div>
       <div class="chip-group" id="estBolsaChips">
         <button class="chip on" type="button" data-por="curso">Por curso</button>
@@ -694,7 +706,7 @@
 <script src="js/agregados.js?v=2.3.0"></script>
 <script src="js/painel.js?v=2.3.0"></script>
 <script src="js/programas.js?v=2.3.0"></script>
-<script src="js/estagio.js?v=2.3.0"></script>
+<script src="js/estagio.js?v=2.3.1"></script>
 <script src="js/entrada.js?v=2.3.0"></script>
 </body>
 </html>

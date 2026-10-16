@@ -207,6 +207,16 @@ window.iniciarEstagio = function (RECORDS) {
   var bolsas = ativos.map(function (r) { return ex(r).bolsa; }).filter(function (b) { return b != null && b > 0; });
   $('estBolsaMedia').textContent = bolsas.length ? fmtReais(media(bolsas)) : '—';
   $('estBolsaMediana').textContent = bolsas.length ? fmtReais(mediana(bolsas)) : '—';
+  // leitura dos números atuais, no fim da legenda "Como ler a bolsa média e a mediana"
+  if (bolsas.length) {
+    var med = media(bolsas), mdn = mediana(bolsas);
+    $('estBolsaLeitura').innerHTML = '<b>Nos dados de agora:</b> média de ' + fmtReais(med) + ' e mediana de ' + fmtReais(mdn) + '. ' +
+      (med > mdn * 1.1
+        ? 'A média é bem maior que a mediana: a maioria ganha perto de ' + fmtReais(mdn) + ', e algumas bolsas bem mais altas puxam a média para cima.'
+        : med < mdn * 0.9
+          ? 'A média é menor que a mediana: algumas bolsas bem mais baixas puxam a média para baixo.'
+          : 'Média e mediana estão próximas: as bolsas são parecidas entre si, sem valores muito fora da curva.');
+  }
   var obrig = ativos.filter(function (r) { return /obrigat[oó]rio/i.test(ex(r).tipo_contrato || '') && !/n[aã]o obrigat/i.test(ex(r).tipo_contrato || ''); }).length;
   $('estObrigatorios').textContent = fmtInt(obrig);
   $('estObrigatoriosSub').textContent = 'de ' + fmtInt(ativos.length) + ' ativos';
