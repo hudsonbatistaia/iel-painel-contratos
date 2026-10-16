@@ -1,6 +1,7 @@
 /* Lê a planilha de extração (Sheet1, colunas A–AK) e transforma cada linha no
    formato do banco. Só os campos usados pelo painel são aproveitados:
-   telefone, e-mails, supervisor, bolsa etc. ficam de fora (LGPD). */
+   telefone, e-mails, supervisor, atividades etc. ficam de fora (LGPD).
+   No estágio entram também os campos de EXTRAS (bolsa, carga horária, recesso...). */
 (function (raiz) {
   "use strict";
 
@@ -59,6 +60,41 @@
     return s || null;
   }
 
+  // campos próprios do estágio, guardados em contratos.extras
+  var EXTRAS = {
+    tipo_contrato: 'Tipo de Contrato',
+    bolsa: 'Bolsa',
+    ch_semanal: 'Carga Horária Semanal',
+    ch_diaria: 'Carga Horária Diária',
+    semestre: 'Semestre',
+    previsao_formatura: 'Previsão de Formatura',
+    recesso_saldo: 'Recesso Remunerado Acumulado',  // saldo ainda não tirado (ver PLANO.md)
+    recesso_tirado: 'Dias de Recesso Tirados'
+  };
+
+  // "   640.00" -> 640; vazio ou texto -> null
+  function numero(valor) {
+    if (valor == null || valor === '') return null;
+    var n = typeof valor === 'number' ? valor : parseFloat(String(valor).replace(/\s/g, '').replace(',', '.'));
+    return isNaN(n) ? null : n;
+  }
+
+  function extrasDe(x) {
+    var prev = data(x[EXTRAS.previsao_formatura]);
+    var sem = numero(x[EXTRAS.semestre]);
+    return {
+      tipo_contrato: texto(x[EXTRAS.tipo_contrato]),
+      bolsa: numero(x[EXTRAS.bolsa]),
+      ch_semanal: numero(x[EXTRAS.ch_semanal]),
+      ch_diaria: numero(x[EXTRAS.ch_diaria]),
+      semestre: sem != null && sem > 0 ? Math.round(sem) : null,
+      previsao_formatura: prev === 'invalida' ? null : prev,
+      recesso_saldo: numero(x[EXTRAS.recesso_saldo]),
+      recesso_tirado: numero(x[EXTRAS.recesso_tirado]),
+      aditivos: 0
+    };
+  }
+
   // coluna que diz o programa de cada linha (Jovem Aprendiz, estágio...)
   var COLUNA_TIPO = 'Tipo de Contrato';
   var COLUNA_SEQUENCIA = 'Sequência';
@@ -67,8 +103,10 @@
      dicionario: [{tipo, chave, valor}]
      doPrograma: função(valor de "Tipo de Contrato") -> true se a linha é do
                  programa escolhido. Linhas de outro programa são puladas.
+     opcoes: { extrasEstagio: true } guarda também os campos de EXTRAS
      Devolve { linhas, faltandoColunas, problemas, grafiasNovas, outroPrograma, tiposOutros } */
-  function interpretar(linhasPlanilha, dicionario, doPrograma) {
+  function interpretar(linhasPlanilha, dicionario, doPrograma, opcoes) {
+    var comExtras = !!(opcoes && opcoes.extrasEstagio);
     var faltandoColunas = [];
     var primeira = linhasPlanilha[0] || {};
     Object.keys(COLUNAS).forEach(function (k) {
@@ -141,6 +179,10 @@
         nasc: nasc === 'invalida' ? null : nasc,
         sequencia: seq ? Number(seq) : null
       };
+      if (comExtras) {
+        item.extras = extrasDe(x);
+        item.extras.aditivos = item.sequencia > 1 ? item.sequencia - 1 : 0;
+      }
 
       var k = contrato + '|' + cpf;
       if (!candidatos[k]) candidatos[k] = [];
@@ -174,6 +216,10 @@
       }
 
       aditivosConsolidados += (itens.length - 1);
+      if (consolidado.extras) {
+        // os extras vêm do termo mais recente; aditivos = maior Sequência - 1 (ou nº de termos - 1)
+        consolidado.extras = Object.assign({}, maisRecente.extras, { aditivos: Math.max(maisRecente.extras.aditivos, itens.length - 1) });
+      }
       linhas.push(consolidado);
     });
 
@@ -202,7 +248,7 @@
     });
   }
 
-  var api = { COLUNAS: COLUNAS, COLUNA_TIPO: COLUNA_TIPO, chave: chave, data: data, interpretar: interpretar, aplicarGrafias: aplicarGrafias };
+  var api = { COLUNAS: COLUNAS, EXTRAS: EXTRAS, COLUNA_TIPO: COLUNA_TIPO, chave: chave, data: data, interpretar: interpretar, aplicarGrafias: aplicarGrafias };
   raiz.Planilha = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

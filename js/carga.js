@@ -115,7 +115,7 @@
   // um programa só: as linhas do outro programa são puladas e contadas
   function lerUm(brutas) {
     var info = PR.INFO[estado.programa];
-    var r = window.Planilha.interpretar(brutas, estado.dicionarios[estado.programa], info.tipoContrato);
+    var r = window.Planilha.interpretar(brutas, estado.dicionarios[estado.programa], info.tipoContrato, { extrasEstagio: estado.programa === 'estagio' });
     if (faltamColunas(r)) return;
     // trava: planilha de outro programa (ex.: estágio escolhido, planilha de aprendiz)
     if (!r.linhas.length && r.outroPrograma) {
@@ -161,7 +161,7 @@
     var partes = [];
     for (var k = 0; k < PR.LISTA.length; k++) {
       var p = PR.LISTA[k];
-      var r = window.Planilha.interpretar(grupos[p], estado.dicionarios[p]);
+      var r = window.Planilha.interpretar(grupos[p], estado.dicionarios[p], null, { extrasEstagio: p === 'estagio' });
       if (faltamColunas(r)) return;
       r.problemas.forEach(function (pr) { pr.motivo = PR.INFO[p].nome + ': ' + pr.motivo; problemas.push(pr); });
       partes.push({ programa: p, linhas: r.linhas, grafiasNovas: r.grafiasNovas, aditivosConsolidados: r.aditivosConsolidados });
@@ -275,7 +275,7 @@
       '</tbody></table></div></details>';
   }
 
-  var NOMES_CAMPOS = { nome: 'nome', empresa: 'empresa', cnpj: 'CNPJ', funcao: 'função', curso_original: 'curso', instituicao: 'instituição', inicio: 'início', fim: 'encerramento', nasc: 'nascimento' };
+  var NOMES_CAMPOS = { nome: 'nome', empresa: 'empresa', cnpj: 'CNPJ', funcao: 'função', curso_original: 'curso', instituicao: 'instituição', inicio: 'início', fim: 'encerramento', nasc: 'nascimento', extras: 'bolsa/carga horária/recesso' };
 
   function numerosHtml(r) {
     return [

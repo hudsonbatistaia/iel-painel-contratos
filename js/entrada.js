@@ -190,7 +190,8 @@
 
     var registros = neutralizarRegistros(dados.records);
     mostrar('painel');
-    window.iniciarPainel(registros, window.calcularAgregados(registros, cons), { programa: programa, rotulos: info.rotulos });
+    window.iniciarPainel(registros, window.calcularAgregados(registros, cons), { programa: programa, rotulos: info.rotulos, faixasEtarias: info.faixasEtarias });
+    if (programa === 'estagio') window.iniciarEstagio(registros);
   }
 
   $('formEntrar').addEventListener('submit', async function (ev) {

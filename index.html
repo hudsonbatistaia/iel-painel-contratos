@@ -7,9 +7,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.2.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.2.0">
-<script src="js/tema.js?v=2.2.0"></script>
+<link rel="stylesheet" href="css/painel.css?v=2.3.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.3.0">
+<script src="js/tema.js?v=2.3.0"></script>
 </head>
 <body class="carregando">
 
@@ -337,6 +337,42 @@
     <div class="venc-table-note" id="venceTableNote"></div>
   </div>
 
+  <!-- BLOCO SÓ DO ESTÁGIO: ALERTAS DA LEI DO ESTÁGIO (v2.3) -->
+  <div class="section" id="estagioAlertas" data-so-estagio hidden>
+    <div class="section-head">
+      <h2>Alertas da Lei do Estágio</h2>
+      <div class="chart-card-actions">
+        <span class="hint">Contratos <b>ativos</b> · clique num quadro pra ver a lista</span>
+        <button class="export-btn small" id="exportEstAlerta" title="Baixa a lista mostrada abaixo em Excel/CSV">⭳ Excel</button>
+      </div>
+    </div>
+    <div class="alert-row cols-4" style="margin-bottom:14px;">
+      <button class="card alert-tile" type="button" data-alerta="limite2" style="--a-color:var(--dias-urgente); --a-wash:var(--status-critical-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Passam do limite de 2 anos na mesma empresa</span></span>
+        <span class="value-row"><span class="value" id="estAlerta2anos">—</span><span class="pct" id="estAlerta2anosSub"></span></span>
+      </button>
+      <button class="card alert-tile" type="button" data-alerta="recesso" style="--a-color:var(--dias-atencao); --a-wash:var(--venc-a30-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Vencem em até 60 dias com recesso a tirar</span></span>
+        <span class="value-row"><span class="value" id="estAlertaRecesso">—</span><span class="pct" id="estAlertaRecessoSub"></span></span>
+      </button>
+      <button class="card alert-tile" type="button" data-alerta="formatura" style="--a-color:var(--dias-preventivo); --a-wash:var(--status-warning-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Terminam depois da previsão de formatura</span></span>
+        <span class="value-row"><span class="value" id="estAlertaFormatura">—</span></span>
+      </button>
+      <button class="card alert-tile" type="button" data-alerta="jornada" style="--a-color:var(--status-serious); --a-wash:var(--status-serious-wash)">
+        <span class="top-row"><span class="dot"></span><span class="label">Jornada acima de 6h por dia ou 30h por semana</span></span>
+        <span class="value-row"><span class="value" id="estAlertaJornada">—</span></span>
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead id="estAlertaCab"></thead>
+        <tbody id="estAlertaTabela"></tbody>
+      </table>
+    </div>
+    <div class="venc-table-note" id="estAlertaNota"></div>
+  </div>
+
   <!-- BLOCO: FUNÇÕES / MODALIDADES -->
   <!-- ARCO OCUPACIONAL -->
   <div class="section">
@@ -420,6 +456,90 @@
       <div class="chart-body">
         <div class="idade-legal-stack" id="idadeLegalStack"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- BLOCO SÓ DO ESTÁGIO: PERFIL (v2.3) -->
+  <div class="section" data-so-estagio hidden>
+    <div class="section-head"><h2>Perfil do estágio</h2><span class="hint">Contratos <b>ativos</b>, exceto onde indicado</span></div>
+    <div class="kpi-row estagio-kpis">
+      <div class="card stat-tile" style="--tile-color:var(--accent); --tile-wash:var(--accent-wash)">
+        <span class="dot"></span><span class="label">Bolsa média</span>
+        <span class="value" id="estBolsaMedia">—</span>
+      </div>
+      <div class="card stat-tile" style="--tile-color:var(--accent); --tile-wash:var(--accent-wash)">
+        <span class="dot"></span><span class="label">Bolsa mediana</span>
+        <span class="value" id="estBolsaMediana">—</span>
+      </div>
+      <div class="card stat-tile" style="--tile-color:var(--status-pending); --tile-wash:var(--status-pending-wash)">
+        <span class="dot"></span><span class="label">Estágios obrigatórios</span>
+        <span class="value" id="estObrigatorios">—</span>
+        <span class="foot" id="estObrigatoriosSub"></span>
+      </div>
+      <div class="card stat-tile" style="--tile-color:var(--status-good); --tile-wash:var(--status-good-wash)">
+        <span class="dot"></span><span class="label">Contratos com prorrogação</span>
+        <span class="value" id="estAditivos">—</span>
+        <span class="foot" id="estAditivosSub"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section grid-3" data-so-estagio hidden>
+    <div class="card chart-card">
+      <div class="chart-card-head"><div>
+        <h3>Bolsa média</h3>
+        <p class="chart-sub">As 10 maiores médias · grupos com 5 ou mais estudantes ativos · valor · nº de estudantes</p>
+      </div></div>
+      <div class="chip-group" id="estBolsaChips">
+        <button class="chip on" type="button" data-por="curso">Por curso</button>
+        <button class="chip" type="button" data-por="empresa">Por empresa</button>
+        <button class="chip" type="button" data-por="nivel">Por nível</button>
+      </div>
+      <div class="chart-body"><div class="bar-list" id="estBolsaBars"></div></div>
+    </div>
+    <div class="card chart-card">
+      <h3>Faixas de bolsa</h3>
+      <p class="chart-sub">Quantos estudantes ativos em cada faixa de valor</p>
+      <div class="chart-body"><div class="bar-list" id="estBolsaFaixas"></div></div>
+    </div>
+  </div>
+
+  <div class="section grid-3" data-so-estagio hidden>
+    <div class="card chart-card">
+      <h3>Instituições de ensino</h3>
+      <p class="chart-sub" id="estInstituicoesSub">Só contratos ativos</p>
+      <div class="chart-body"><div class="bar-list" id="estInstituicoes"></div></div>
+    </div>
+    <div class="card chart-card">
+      <h3>Nível de ensino</h3>
+      <p class="chart-sub">Deduzido do nome do curso · só contratos ativos</p>
+      <div class="chart-body"><div class="bar-list" id="estNivel"></div></div>
+    </div>
+  </div>
+
+  <div class="section grid-3" data-so-estagio hidden>
+    <div class="card chart-card">
+      <h3>Empresas que mais prorrogam</h3>
+      <p class="chart-sub">% de contratos com termo aditivo · empresas com 10 contratos ou mais (todas as situações, menos cancelados)</p>
+      <div class="chart-body"><div class="bar-list" id="estProrrogacoes"></div></div>
+    </div>
+    <div class="card chart-card">
+      <h3>Rescisão antecipada por curso</h3>
+      <p class="chart-sub" id="estRescisaoSub">Rescindidos ÷ (rescindidos + concluídos)</p>
+      <div class="chart-body"><div class="bar-list" id="estRescisao"></div></div>
+    </div>
+  </div>
+
+  <div class="section grid-3" data-so-estagio hidden>
+    <div class="card chart-card">
+      <h3>Semestre dos estudantes</h3>
+      <p class="chart-sub" id="estSemestreSub">Só contratos ativos</p>
+      <div class="chart-body"><div class="bar-list" id="estSemestre"></div></div>
+    </div>
+    <div class="card chart-card">
+      <h3>Formaturas previstas</h3>
+      <p class="chart-sub">Estudantes ativos que se formam nos próximos 6 meses: vagas que devem abrir</p>
+      <div class="chart-body"><div class="bar-list" id="estFormaturas"></div></div>
     </div>
   </div>
 
@@ -569,11 +689,12 @@
 </div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script src="js/config.js?v=2.2.0"></script>
-<script src="js/acesso.js?v=2.2.0"></script>
-<script src="js/agregados.js?v=2.2.0"></script>
-<script src="js/painel.js?v=2.2.0"></script>
-<script src="js/programas.js?v=2.2.0"></script>
-<script src="js/entrada.js?v=2.2.0"></script>
+<script src="js/config.js?v=2.3.0"></script>
+<script src="js/acesso.js?v=2.3.0"></script>
+<script src="js/agregados.js?v=2.3.0"></script>
+<script src="js/painel.js?v=2.3.0"></script>
+<script src="js/programas.js?v=2.3.0"></script>
+<script src="js/estagio.js?v=2.3.0"></script>
+<script src="js/entrada.js?v=2.3.0"></script>
 </body>
 </html>

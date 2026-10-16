@@ -184,3 +184,15 @@ a.programa-cartao:focus-visible { outline: 2px solid var(--accent-ring); outline
 .carga-previa-programa { border-top: 1px solid var(--gridline); padding-top: 12px; margin-top: 12px; }
 .carga-previa-programa:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
 .carga-previa-programa h3 { font-family: "Archivo", system-ui, sans-serif; font-size: 15px; margin: 0 0 8px; color: var(--accent); }
+
+/* ---------------- seções só do estágio (v2.3) ---------------- */
+.kpi-row.estagio-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.estagio-kpis .stat-tile .foot { font-size: 12px; color: var(--text-muted); }
+.estagio-vazio { color: var(--text-muted); font-size: 13.5px; margin: 8px 0; }
+#estagioAlertas .alert-tile { text-align: left; cursor: pointer; }
+@media (max-width: 860px) { .kpi-row.estagio-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .kpi-row.estagio-kpis > :first-child { grid-column: auto; } }
+/* nos gráficos do estágio o valor traz mais informação ("R$ 2.800 · 21", "80% · 16 de 20") */
+[data-so-estagio] .bar-row { grid-template-columns: 148px minmax(0, 1fr) auto; }
+[data-so-estagio] .bar-row .val { white-space: nowrap; min-width: 56px; }
+@media (max-width: 560px) { [data-so-estagio] .bar-row { grid-template-columns: 96px minmax(0, 1fr) auto; gap: 8px; } }

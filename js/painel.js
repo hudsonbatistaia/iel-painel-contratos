@@ -454,7 +454,7 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
   });
 
   /* ================= FAIXA ETÁRIA ================= */
-  var FAIXA_ETARIA_BUCKETS = [
+  var FAIXA_ETARIA_BUCKETS = OPC.faixasEtarias || [
     { faixa: '14-15 anos', min: 0, max: 16 },
     { faixa: '16-17 anos', min: 16, max: 18 },
     { faixa: '18-19 anos', min: 18, max: 20 },
