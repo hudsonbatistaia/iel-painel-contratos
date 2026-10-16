@@ -8,7 +8,7 @@
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
 <link rel="stylesheet" href="css/painel.css?v=2.4.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.4.0">
+<link rel="stylesheet" href="css/acesso.css?v=2.4.2">
 <script src="js/tema.js?v=2.4.0"></script>
 </head>
 <body class="carregando">
@@ -563,10 +563,14 @@
       <div class="chart-body"><div class="bar-list" id="estProrrogacoes"></div></div>
     </div>
     <div class="card chart-card">
-      <h3>Rescisão antecipada por curso</h3>
-      <p class="chart-sub" id="estRescisaoSub">Rescindidos ÷ (rescindidos + concluídos)</p>
-      <select class="input estagio-filtro" id="estRescisaoEmpresa" aria-label="Filtrar por empresa"><option value="">Todas as empresas</option></select>
+      <h3>Rescisão antecipada</h3>
+      <p class="chart-sub" id="estRescisaoSub">Contratos encerrados antes do prazo</p>
+      <div class="chip-group" id="estRescisaoChips">
+        <button class="chip on" type="button" data-por="curso">Por curso</button>
+        <button class="chip" type="button" data-por="empresa">Por empresa</button>
+      </div>
       <div class="chart-body"><div class="bar-list" id="estRescisao"></div></div>
+      <p class="chart-sub estagio-nota" id="estRescisaoNota"></p>
     </div>
   </div>
 
@@ -749,7 +753,7 @@
 <script src="js/agregados.js?v=2.4.0"></script>
 <script src="js/painel.js?v=2.4.0"></script>
 <script src="js/programas.js?v=2.4.0"></script>
-<script src="js/estagio.js?v=2.4.0"></script>
+<script src="js/estagio.js?v=2.4.1"></script>
 <script src="js/aprendiz.js?v=2.4.0"></script>
 <script src="js/entrada.js?v=2.4.0"></script>
 </body>

@@ -237,3 +237,12 @@ a.programa-cartao:focus-visible { outline: 2px solid var(--accent-ring); outline
   .aulas-grade th[scope="row"] { width: 48px; font-size: 11.5px; }
   .aula-cel { min-height: 40px; font-size: 14px; }
 }
+.estagio-nota { margin: 10px 0 0; font-size: 12px; }
+/* a coluna do valor precisa ter a MESMA largura em todas as linhas, senão as barras
+   de linhas diferentes ficam com comprimentos que não batem com os números */
+[data-so-estagio] .bar-row, .barras-largas .bar-row { grid-template-columns: 148px minmax(0, 1fr) 132px; }
+[data-so-estagio] .bar-row .val, .barras-largas .bar-row .val { min-width: 0; }
+@media (max-width: 560px) {
+  [data-so-estagio] .bar-row, .barras-largas .bar-row { grid-template-columns: 88px minmax(0, 1fr) 112px; gap: 6px; }
+  [data-so-estagio] .bar-row .val, .barras-largas .bar-row .val { font-size: 11.5px; }
+}
