@@ -255,25 +255,24 @@ window.iniciarEstagio = function (RECORDS) {
   // rescisão antecipada por curso ou por empresa, em páginas de 10
   var MIN_RESC = { curso: 20, empresa: 10 };
   var GRUPO_RESC = { curso: { de: 'do curso', muitos: 'cursos' }, empresa: { de: 'da empresa', muitos: 'empresas' } };
-  var encerrados = RECORDS.filter(function (r) { return r.situacao === 'Rescindido' || r.situacao === 'Concluído'; });
-  var nResc = encerrados.filter(function (r) { return r.situacao === 'Rescindido'; }).length;
-  var mediaGeral = encerrados.length ? nResc / encerrados.length * 100 : 0;
+  var baseResc = G.baseDeRescisao(RECORDS);   // ativos + rescindidos + concluídos
+  var mediaGeral = G.taxaGeral(baseResc);
   var RESC_POR = { curso: function (r) { return r.funcao; }, empresa: function (r) { return r.empresa; } };
   var rescAtual = 'curso';
   var rankingResc = G.ranking('estRescisao');
   function desenharRescisao() {
-    var lista = G.taxasDeRescisao(encerrados, RESC_POR[rescAtual], MIN_RESC[rescAtual]);
+    var lista = G.taxasDeRescisao(baseResc, RESC_POR[rescAtual], MIN_RESC[rescAtual]);
     rankingResc.mostrar(lista, {
       rotulo: GRUPO_RESC[rescAtual].muitos,
-      vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos encerrados ou mais.',
+      vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos ou mais.',
       csv: { nome: 'estagio_rescisao_por_' + rescAtual + '.csv',
-             cabecalho: [rescAtual === 'curso' ? 'Curso' : 'Empresa', '% rescindidos', 'Rescindidos', 'Concluídos', 'Encerrados'],
-             linhas: function () { return lista.map(function (l) { return [l.nome, String(Math.round(l.valor * 10) / 10).replace('.', ','), l.rescindidos, l.encerrados - l.rescindidos, l.encerrados]; }); } }
+             cabecalho: [rescAtual === 'curso' ? 'Curso' : 'Empresa', '% rescindidos', 'Rescindidos', 'Ativos', 'Concluídos', 'Total de contratos'],
+             linhas: function () { return G.csvRescisao(lista); } }
     });
     $('estRescisaoLeitura').innerHTML = G.leituraRescisao(lista[0], GRUPO_RESC[rescAtual], mediaGeral, MIN_RESC[rescAtual]);
     document.querySelectorAll('#estRescisaoChips .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-por') === rescAtual); });
   }
-  $('estRescisaoSub').textContent = 'Dos contratos que já terminaram, quantos foram rescindidos antes do prazo · média geral ' + fmtPct(mediaGeral);
+  $('estRescisaoSub').textContent = 'De todos os contratos que começaram, quantos foram rescindidos antes do prazo · média geral ' + fmtPct(mediaGeral);
   document.querySelectorAll('#estRescisaoChips .chip').forEach(function (c) {
     c.addEventListener('click', function () { rescAtual = c.getAttribute('data-por'); desenharRescisao(); });
   });
