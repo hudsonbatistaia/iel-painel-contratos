@@ -8,7 +8,7 @@
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
 <link rel="stylesheet" href="css/painel.css?v=2.4.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.4.2">
+<link rel="stylesheet" href="css/acesso.css?v=2.4.4">
 <script src="js/tema.js?v=2.4.0"></script>
 </head>
 <body class="carregando">
@@ -558,19 +558,54 @@
 
   <div class="section grid-3" data-so-estagio hidden>
     <div class="card chart-card">
-      <h3>Empresas que mais prorrogam</h3>
-      <p class="chart-sub">% de contratos com termo aditivo · empresas com 10 contratos ou mais (todas as situações, menos cancelados)</p>
+      <div class="chart-card-head">
+        <div>
+          <h3>Empresas que mais prorrogam</h3>
+          <p class="chart-sub">% dos contratos que tiveram termo aditivo (prorrogação)</p>
+        </div>
+        <div class="chart-card-actions">
+          <div class="year-nav">
+            <button class="icon-btn" id="estProrrogacoesPrev" type="button" title="Anteriores" disabled>‹</button>
+            <select class="page-select" id="estProrrogacoesPagina" aria-label="Ir para página" title="Ir para página"></select>
+            <span class="page-total" id="estProrrogacoesTotal">de —</span>
+            <button class="icon-btn" id="estProrrogacoesNext" type="button" title="Mais">›</button>
+          </div>
+          <button class="export-btn small" id="estProrrogacoesExcel" type="button" title="Baixa a lista completa em Excel/CSV">⭳ Excel</button>
+        </div>
+      </div>
       <div class="chart-body"><div class="bar-list" id="estProrrogacoes"></div></div>
+      <p class="chart-sub estagio-nota" id="estProrrogacoesFaixa"></p>
+      <details class="interpret-alert estagio-legenda">
+        <summary><span class="icon" aria-hidden="true">💡</span> Como ler este gráfico <span class="chevron" aria-hidden="true">▾</span></summary>
+        <div class="interpret-body" id="estProrrogacoesLeitura"></div>
+      </details>
     </div>
     <div class="card chart-card">
-      <h3>Rescisão antecipada</h3>
-      <p class="chart-sub" id="estRescisaoSub">Contratos encerrados antes do prazo</p>
+      <div class="chart-card-head">
+        <div>
+          <h3>Rescisão antecipada</h3>
+          <p class="chart-sub" id="estRescisaoSub">Contratos encerrados antes do prazo</p>
+        </div>
+        <div class="chart-card-actions">
+          <div class="year-nav">
+            <button class="icon-btn" id="estRescisaoPrev" type="button" title="Anteriores" disabled>‹</button>
+            <select class="page-select" id="estRescisaoPagina" aria-label="Ir para página" title="Ir para página"></select>
+            <span class="page-total" id="estRescisaoTotal">de —</span>
+            <button class="icon-btn" id="estRescisaoNext" type="button" title="Mais">›</button>
+          </div>
+          <button class="export-btn small" id="estRescisaoExcel" type="button" title="Baixa a lista completa em Excel/CSV">⭳ Excel</button>
+        </div>
+      </div>
       <div class="chip-group" id="estRescisaoChips">
         <button class="chip on" type="button" data-por="curso">Por curso</button>
         <button class="chip" type="button" data-por="empresa">Por empresa</button>
       </div>
       <div class="chart-body"><div class="bar-list" id="estRescisao"></div></div>
-      <p class="chart-sub estagio-nota" id="estRescisaoNota"></p>
+      <p class="chart-sub estagio-nota" id="estRescisaoFaixa"></p>
+      <details class="interpret-alert estagio-legenda">
+        <summary><span class="icon" aria-hidden="true">💡</span> Como ler este gráfico <span class="chevron" aria-hidden="true">▾</span></summary>
+        <div class="interpret-body" id="estRescisaoLeitura"></div>
+      </details>
     </div>
   </div>
 
@@ -590,14 +625,31 @@
   <!-- BLOCO SÓ DO APRENDIZ: RESCISÃO ANTECIPADA POR EMPRESA E POR FUNÇÃO (v2.4) -->
   <div class="section" data-so-aprendiz>
     <div class="card chart-card barras-largas">
-      <h3>Rescisão antecipada</h3>
-      <p class="chart-sub" id="aprRescisaoSub">Contratos encerrados antes do prazo</p>
+      <div class="chart-card-head">
+        <div>
+          <h3>Rescisão antecipada</h3>
+          <p class="chart-sub" id="aprRescisaoSub">Contratos encerrados antes do prazo</p>
+        </div>
+        <div class="chart-card-actions">
+          <div class="year-nav">
+            <button class="icon-btn" id="aprRescisaoPrev" type="button" title="Anteriores" disabled>‹</button>
+            <select class="page-select" id="aprRescisaoPagina" aria-label="Ir para página" title="Ir para página"></select>
+            <span class="page-total" id="aprRescisaoTotal">de —</span>
+            <button class="icon-btn" id="aprRescisaoNext" type="button" title="Mais">›</button>
+          </div>
+          <button class="export-btn small" id="aprRescisaoExcel" type="button" title="Baixa a lista completa em Excel/CSV">⭳ Excel</button>
+        </div>
+      </div>
       <div class="chip-group" id="aprRescisaoChips">
         <button class="chip on" type="button" data-por="funcao">Por função</button>
         <button class="chip" type="button" data-por="empresa">Por empresa</button>
       </div>
       <div class="chart-body"><div class="bar-list" id="aprRescisao"></div></div>
-      <p class="chart-sub estagio-nota" id="aprRescisaoNota"></p>
+      <p class="chart-sub estagio-nota" id="aprRescisaoFaixa"></p>
+      <details class="interpret-alert estagio-legenda">
+        <summary><span class="icon" aria-hidden="true">💡</span> Como ler este gráfico <span class="chevron" aria-hidden="true">▾</span></summary>
+        <div class="interpret-body" id="aprRescisaoLeitura"></div>
+      </details>
     </div>
   </div>
 
@@ -752,8 +804,9 @@
 <script src="js/agregados.js?v=2.4.0"></script>
 <script src="js/painel.js?v=2.4.0"></script>
 <script src="js/programas.js?v=2.4.0"></script>
-<script src="js/estagio.js?v=2.4.1"></script>
-<script src="js/aprendiz.js?v=2.4.3"></script>
+<script src="js/graficos.js?v=2.4.4"></script>
+<script src="js/estagio.js?v=2.4.4"></script>
+<script src="js/aprendiz.js?v=2.4.4"></script>
 <script src="js/entrada.js?v=2.4.0"></script>
 </body>
 </html>

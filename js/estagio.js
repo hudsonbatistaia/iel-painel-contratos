@@ -11,14 +11,9 @@ window.iniciarEstagio = function (RECORDS) {
   var JANELA_RECESSO = 60;            // contratos que vencem nestes dias com recesso a tirar
   var HOJE = (function () { var d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
 
-  function esc(v) {
-    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-  function fmtInt(n) { return Number(n || 0).toLocaleString('pt-BR'); }
+  var G = window.Graficos;
+  var esc = G.esc, fmtInt = G.fmtInt, fmtPct = G.fmtPct, barras = G.barras, baixarCsv = G.baixarCsv;
   function fmtReais(n) { return 'R$ ' + Number(n || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 }); }
-  function fmtPct(n) { return (Math.round(n * 10) / 10).toLocaleString('pt-BR') + '%'; }
   function dataDe(iso) { return iso ? new Date(String(iso).slice(0, 10) + 'T00:00:00') : null; }
   function isoDe(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function fmtData(iso) { if (!iso) return '—'; var p = String(iso).slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
@@ -45,37 +40,7 @@ window.iniciarEstagio = function (RECORDS) {
 
   var ativos = RECORDS.filter(function (r) { return r.situacao === 'Ativo'; });
 
-  /* barras no mesmo formato visual do painel: [{ nome, valor, texto }] */
-  function barras(id, linhas, vazio) {
-    var el = $(id);
-    if (!linhas.length) { el.innerHTML = '<p class="estagio-vazio">' + esc(vazio || 'Sem dados suficientes.') + '</p>'; return; }
-    var max = Math.max.apply(null, linhas.map(function (l) { return l.valor; })) || 1;
-    el.innerHTML = linhas.map(function (l, i) {
-      return '<div class="bar-row' + (i === 0 ? ' top' : '') + '">' +
-        '<span class="name" title="' + esc(l.nome) + '"><span class="name-text">' + esc(l.nome) + '</span></span>' +
-        '<span class="bar-track"><span class="bar-fill" style="width:' + (l.valor / max * 100).toFixed(1) + '%"></span></span>' +
-        '<span class="val">' + esc(l.texto) + '</span></div>';
-    }).join('');
-  }
 
-  /* ---------- exportar (mesmo formato dos outros botões ⭳ Excel) ---------- */
-  function baixarCsv(nome, cabecalho, linhas) {
-    if (!linhas.length) { avisar('Nada pra exportar.'); return; }
-    function c(v) { v = v == null ? '' : String(v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-    var csv = '﻿' + [cabecalho].concat(linhas).map(function (l) { return l.map(c).join(';'); }).join('\r\n');
-    var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    var a = document.createElement('a');
-    a.href = url; a.download = nome; a.style.display = 'none';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    avisar(fmtInt(linhas.length) + ' linha(s) exportada(s).');
-  }
-  function avisar(texto) {
-    var t = $('toast');
-    if (!t) return;
-    t.textContent = texto; t.classList.add('show');
-    setTimeout(function () { t.classList.remove('show'); }, 2600);
-  }
 
   /* ================= 1. ALERTAS DA LEI DO ESTÁGIO ================= */
 
@@ -270,34 +235,45 @@ window.iniciarEstagio = function (RECORDS) {
     return { nome: k, valor: niv[k] || 0, texto: fmtInt(niv[k] || 0) + ' (' + fmtPct(ativos.length ? (niv[k] || 0) / ativos.length * 100 : 0) + ')' };
   }));
 
-  // prorrogações por empresa (empresas com pelo menos 10 contratos)
+  // prorrogações por empresa (empresas com pelo menos 10 contratos), em páginas de 10
   var MIN_PROR = 10;
   var porEmpresa = {};
   validos.forEach(function (r) { var e = porEmpresa[r.empresa] = porEmpresa[r.empresa] || { t: 0, a: 0 }; e.t++; if ((ex(r).aditivos || 0) > 0) e.a++; });
-  barras('estProrrogacoes', Object.keys(porEmpresa).filter(function (k) { return porEmpresa[k].t >= MIN_PROR; })
-    .map(function (k) { var e = porEmpresa[k]; return { nome: k, valor: e.a / e.t * 100, texto: fmtPct(e.a / e.t * 100) + ' · ' + fmtInt(e.a) + ' de ' + fmtInt(e.t) }; })
-    .sort(function (a, b) { return b.valor - a.valor; }).slice(0, 10), 'Nenhuma empresa com ' + MIN_PROR + ' contratos ou mais.');
+  var prorrogacoes = Object.keys(porEmpresa).filter(function (k) { return porEmpresa[k].t >= MIN_PROR; })
+    .map(function (k) { var e = porEmpresa[k]; return { nome: k, valor: e.a / e.t * 100, com: e.a, total: e.t, texto: fmtPct(e.a / e.t * 100) + ' (' + fmtInt(e.a) + ' de ' + fmtInt(e.t) + ')' }; })
+    .sort(function (a, b) { return b.valor - a.valor || b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'); });
+  G.ranking('estProrrogacoes').mostrar(prorrogacoes, {
+    rotulo: 'empresas', vazio: 'Nenhuma empresa com ' + MIN_PROR + ' contratos ou mais.',
+    csv: { nome: 'estagio_prorrogacoes_por_empresa.csv', cabecalho: ['Empresa', '% com prorrogação', 'Contratos com termo aditivo', 'Total de contratos'],
+           linhas: function () { return prorrogacoes.map(function (l) { return [l.nome, String(Math.round(l.valor * 10) / 10).replace('.', ','), l.com, l.total]; }); } }
+  });
+  var pp = prorrogacoes[0];
+  $('estProrrogacoesLeitura').innerHTML = '<p><b>O que mostra:</b> em cada empresa, quantos contratos tiveram pelo menos um termo aditivo, ou seja, foram prorrogados.</p>' +
+    (pp ? '<p><b>Exemplo:</b> ' + esc(pp.nome) + ' — ' + esc(pp.texto) + ': de ' + fmtInt(pp.total) + ' contratos dessa empresa, ' + fmtInt(pp.com) + (pp.com === 1 ? ' foi prorrogado' : ' foram prorrogados') + '.</p>' : '') +
+    '<p>Entram todas as situações, menos cancelados, e só empresas com ' + MIN_PROR + ' contratos ou mais.</p>';
 
-  // rescisão antecipada: % dos contratos encerrados que terminaram por rescisão, por curso ou por empresa.
-  // Só entram grupos com contratos encerrados suficientes para a taxa fazer sentido.
+  // rescisão antecipada por curso ou por empresa, em páginas de 10
   var MIN_RESC = { curso: 20, empresa: 10 };
+  var GRUPO_RESC = { curso: { de: 'do curso', muitos: 'cursos' }, empresa: { de: 'da empresa', muitos: 'empresas' } };
   var encerrados = RECORDS.filter(function (r) { return r.situacao === 'Rescindido' || r.situacao === 'Concluído'; });
   var nResc = encerrados.filter(function (r) { return r.situacao === 'Rescindido'; }).length;
   var mediaGeral = encerrados.length ? nResc / encerrados.length * 100 : 0;
   var RESC_POR = { curso: function (r) { return r.funcao; }, empresa: function (r) { return r.empresa; } };
   var rescAtual = 'curso';
+  var rankingResc = G.ranking('estRescisao');
   function desenharRescisao() {
-    var min = MIN_RESC[rescAtual], g = {};
-    encerrados.forEach(function (r) { var k = RESC_POR[rescAtual](r); var c = g[k] = g[k] || { t: 0, r: 0 }; c.t++; if (r.situacao === 'Rescindido') c.r++; });
-    barras('estRescisao', Object.keys(g).filter(function (k) { return g[k].t >= min; })
-      .map(function (k) { var c = g[k]; return { nome: k, valor: c.r / c.t * 100, texto: fmtPct(c.r / c.t * 100) + ' · ' + fmtInt(c.r) + ' de ' + fmtInt(c.t) }; })
-      .sort(function (a, b) { return b.valor - a.valor || a.nome.localeCompare(b.nome, 'pt-BR'); }).slice(0, 10),
-      'Nenhum ' + rescAtual + ' com ' + min + ' contratos encerrados ou mais.');
-    $('estRescisaoNota').textContent = 'As 10 maiores taxas · só ' + (rescAtual === 'curso' ? 'cursos' : 'empresas') + ' com ' + min +
-      ' contratos encerrados ou mais · cada linha: taxa · rescindidos de encerrados';
+    var lista = G.taxasDeRescisao(encerrados, RESC_POR[rescAtual], MIN_RESC[rescAtual]);
+    rankingResc.mostrar(lista, {
+      rotulo: GRUPO_RESC[rescAtual].muitos,
+      vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos encerrados ou mais.',
+      csv: { nome: 'estagio_rescisao_por_' + rescAtual + '.csv',
+             cabecalho: [rescAtual === 'curso' ? 'Curso' : 'Empresa', '% rescindidos', 'Rescindidos', 'Concluídos', 'Encerrados'],
+             linhas: function () { return lista.map(function (l) { return [l.nome, String(Math.round(l.valor * 10) / 10).replace('.', ','), l.rescindidos, l.encerrados - l.rescindidos, l.encerrados]; }); } }
+    });
+    $('estRescisaoLeitura').innerHTML = G.leituraRescisao(lista[0], GRUPO_RESC[rescAtual], mediaGeral, MIN_RESC[rescAtual]);
     document.querySelectorAll('#estRescisaoChips .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-por') === rescAtual); });
   }
-  $('estRescisaoSub').textContent = 'Contratos encerrados antes do prazo (rescindidos) · média geral ' + fmtPct(mediaGeral);
+  $('estRescisaoSub').textContent = 'Dos contratos que já terminaram, quantos foram rescindidos antes do prazo · média geral ' + fmtPct(mediaGeral);
   document.querySelectorAll('#estRescisaoChips .chip').forEach(function (c) {
     c.addEventListener('click', function () { rescAtual = c.getAttribute('data-por'); desenharRescisao(); });
   });

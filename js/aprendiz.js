@@ -8,44 +8,12 @@ window.iniciarAprendiz = function (RECORDS) {
 
   var $ = function (id) { return document.getElementById(id); };
 
-  function esc(v) {
-    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-  function fmtInt(n) { return Number(n || 0).toLocaleString('pt-BR'); }
-  function fmtPct(n) { return (Math.round(n * 10) / 10).toLocaleString('pt-BR') + '%'; }
+  var G = window.Graficos;
+  var esc = G.esc, fmtInt = G.fmtInt, fmtPct = G.fmtPct, baixarCsv = G.baixarCsv;
   function fmtData(iso) { if (!iso) return '—'; var p = String(iso).slice(0, 10).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
   function ex(r) { return r.extras || {}; }
 
-  /* barras no mesmo formato visual do painel: [{ nome, valor, texto }] */
-  function barras(id, linhas, vazio) {
-    var el = $(id);
-    if (!linhas.length) { el.innerHTML = '<p class="estagio-vazio">' + esc(vazio || 'Sem dados suficientes.') + '</p>'; return; }
-    var max = Math.max.apply(null, linhas.map(function (l) { return l.valor; })) || 1;
-    el.innerHTML = linhas.map(function (l, i) {
-      return '<div class="bar-row' + (i === 0 ? ' top' : '') + '">' +
-        '<span class="name" title="' + esc(l.nome) + '"><span class="name-text">' + esc(l.nome) + '</span></span>' +
-        '<span class="bar-track"><span class="bar-fill" style="width:' + (l.valor / max * 100).toFixed(1) + '%"></span></span>' +
-        '<span class="val">' + esc(l.texto) + '</span></div>';
-    }).join('');
-  }
-  function avisar(texto) {
-    var t = $('toast'); if (!t) return;
-    t.textContent = texto; t.classList.add('show');
-    setTimeout(function () { t.classList.remove('show'); }, 2600);
-  }
-  function baixarCsv(nome, cabecalho, linhas) {
-    if (!linhas.length) { avisar('Nada pra exportar.'); return; }
-    function c(v) { v = v == null ? '' : String(v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-    var csv = '﻿' + [cabecalho].concat(linhas).map(function (l) { return l.map(c).join(';'); }).join('\r\n');
-    var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    var a = document.createElement('a');
-    a.href = url; a.download = nome; a.style.display = 'none';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    avisar(fmtInt(linhas.length) + ' linha(s) exportada(s).');
-  }
+
 
   var ativos = RECORDS.filter(function (r) { return r.situacao === 'Ativo'; });
   // a base inicial antiga não traz os dados da aula teórica: só a extração nova traz
@@ -125,27 +93,28 @@ window.iniciarAprendiz = function (RECORDS) {
   desenharAulas();
 
   /* ================= 2. RESCISÃO ANTECIPADA (por função ou por empresa) =================
-     Igual ao gráfico do estágio: % dos contratos encerrados que terminaram por rescisão.
-     Só entram grupos com contratos encerrados suficientes para a taxa fazer sentido. */
+     Igual ao gráfico do estágio, em páginas de 10. */
   var MIN_RESC = { funcao: 10, empresa: 10 };
+  var GRUPO_RESC = { funcao: { de: 'da função', muitos: 'funções' }, empresa: { de: 'da empresa', muitos: 'empresas' } };
   var encerrados = RECORDS.filter(function (r) { return r.situacao === 'Rescindido' || r.situacao === 'Concluído'; });
   var nResc = encerrados.filter(function (r) { return r.situacao === 'Rescindido'; }).length;
   var mediaGeral = encerrados.length ? nResc / encerrados.length * 100 : 0;
   var RESC_POR = { funcao: function (r) { return r.funcao; }, empresa: function (r) { return r.empresa; } };
-  var NOME_GRUPO = { funcao: 'funções', empresa: 'empresas' };
   var rescAtual = 'funcao';
+  var rankingResc = G.ranking('aprRescisao');
   function desenharRescisao() {
-    var min = MIN_RESC[rescAtual], g = {};
-    encerrados.forEach(function (r) { var k = RESC_POR[rescAtual](r); var c = g[k] = g[k] || { t: 0, r: 0 }; c.t++; if (r.situacao === 'Rescindido') c.r++; });
-    barras('aprRescisao', Object.keys(g).filter(function (k) { return g[k].t >= min; })
-      .map(function (k) { var c = g[k]; return { nome: k, valor: c.r / c.t * 100, texto: fmtPct(c.r / c.t * 100) + ' · ' + fmtInt(c.r) + ' de ' + fmtInt(c.t) }; })
-      .sort(function (a, b) { return b.valor - a.valor || a.nome.localeCompare(b.nome, 'pt-BR'); }).slice(0, 10),
-      'Nenhum grupo com ' + min + ' contratos encerrados ou mais.');
-    $('aprRescisaoNota').textContent = 'As 10 maiores taxas · só ' + NOME_GRUPO[rescAtual] + ' com ' + min +
-      ' contratos encerrados ou mais · cada linha: taxa · rescindidos de encerrados';
+    var lista = G.taxasDeRescisao(encerrados, RESC_POR[rescAtual], MIN_RESC[rescAtual]);
+    rankingResc.mostrar(lista, {
+      rotulo: GRUPO_RESC[rescAtual].muitos,
+      vazio: 'Nenhum grupo com ' + MIN_RESC[rescAtual] + ' contratos encerrados ou mais.',
+      csv: { nome: 'jovem_aprendiz_rescisao_por_' + rescAtual + '.csv',
+             cabecalho: [rescAtual === 'funcao' ? 'Função' : 'Empresa', '% rescindidos', 'Rescindidos', 'Concluídos', 'Encerrados'],
+             linhas: function () { return lista.map(function (l) { return [l.nome, String(Math.round(l.valor * 10) / 10).replace('.', ','), l.rescindidos, l.encerrados - l.rescindidos, l.encerrados]; }); } }
+    });
+    $('aprRescisaoLeitura').innerHTML = G.leituraRescisao(lista[0], GRUPO_RESC[rescAtual], mediaGeral, MIN_RESC[rescAtual]);
     document.querySelectorAll('#aprRescisaoChips .chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-por') === rescAtual); });
   }
-  $('aprRescisaoSub').textContent = 'Contratos encerrados antes do prazo (rescindidos) · média geral ' + fmtPct(mediaGeral);
+  $('aprRescisaoSub').textContent = 'Dos contratos que já terminaram, quantos foram rescindidos antes do prazo · média geral ' + fmtPct(mediaGeral);
   document.querySelectorAll('#aprRescisaoChips .chip').forEach(function (c) {
     c.addEventListener('click', function () { rescAtual = c.getAttribute('data-por'); desenharRescisao(); });
   });
