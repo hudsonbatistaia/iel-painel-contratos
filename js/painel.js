@@ -2100,6 +2100,18 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
   }
 
   /* ================= CONSOLIDAÇÃO ================= */
+  // "A planilha trouxe 873 contratos: 52 novos e 821 que já estavam na base. A base passou de 1.694 para 1.746 contratos."
+  function textoDaCarga(c) {
+    function contratos(n) { return fmtInt(n) + (n === 1 ? ' contrato' : ' contratos'); }
+    var ja = Math.max(0, c.planilhaNovaTotal - c.novos);
+    if (!c.baseAnteriorTotal) return 'Primeira carga deste programa: <b>' + contratos(c.planilhaNovaTotal) + '</b> na base.';
+    var txt = 'A planilha trouxe <b>' + contratos(c.planilhaNovaTotal) + '</b>: <b>' + fmtInt(c.novos) + (c.novos === 1 ? ' novo' : ' novos') + '</b> e ' +
+      fmtInt(ja) + (ja === 1 ? ' que já estava' : ' que já estavam') + ' na base. ';
+    return txt + (AGG.totalGeral === c.baseAnteriorTotal
+      ? 'A base continua com <b>' + contratos(AGG.totalGeral) + '</b>.'
+      : 'A base passou de ' + fmtInt(c.baseAnteriorTotal) + ' para <b>' + contratos(AGG.totalGeral) + '</b>.');
+  }
+
   function renderConsolidacaoBanner() {
     var c = AGG.consolidacao;
     var el = document.getElementById('consolidacaoBanner');
@@ -2114,8 +2126,11 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
         c.alertas.map(function(a){ return '<li>'+a+'</li>'; }).join('') + '</ul></div>';
     }
     // período coberto pela extração desta rodada (informado na tela de carga)
+    var periodoTxt = c.periodoInicio
+      ? 'contratos de <b>' + fmtDate(c.periodoInicio) + ' a ' + fmtDate(c.periodoFim) + '</b>'
+      : 'dados de <b>' + fmtDate(c.dataBaseAtual) + '</b>';
     var periodoHtml = c.periodoInicio
-      ? ' <span class="cb-periodo">Período dos dados desta extração: <b>' + fmtDate(c.periodoInicio) + ' a ' + fmtDate(c.periodoFim) + '</b>.</span>'
+      ? ' <span class="cb-periodo">Contratos de <b>' + fmtDate(c.periodoInicio) + ' a ' + fmtDate(c.periodoFim) + '</b>.</span>'
       : '';
     if (c.tipo === 'carga_inicial') {
       el.innerHTML =
@@ -2126,14 +2141,12 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
     }
     el.innerHTML =
       '<span class="cb-icon">🔄</span>' +
-      '<span class="cb-text">' + (c.dataBaseAnterior
-        ? 'Consolidação rodada em <b>'+fmtDate(c.dataBaseAtual)+'</b>: base de '+fmtDate(c.dataBaseAnterior)+' (<b>'+fmtInt(c.baseAnteriorTotal)+'</b>) + extração nova (<b>'+fmtInt(c.planilhaNovaTotal)+'</b>) → <b>'+fmtInt(AGG.totalGeral)+' registros</b> consolidados por Contrato + CPF.'
-        : 'Primeira carga deste programa, com dados de <b>'+fmtDate(c.dataBaseAtual)+'</b>: extração com <b>'+fmtInt(c.planilhaNovaTotal)+'</b> registros → <b>'+fmtInt(AGG.totalGeral)+' registros</b> consolidados por Contrato + CPF.') +
-        periodoHtml + '</span>' +
+      '<span class="cb-text"><span class="cb-linha"><b>Última atualização: ' + (c.atualizadaEm || fmtDate(c.dataBaseAtual)) + '</b> · ' + periodoTxt + '</span>' +
+        '<span class="cb-linha">' + textoDaCarga(c) + '</span></span>' +
       '<span class="cb-stats">' +
         '<span class="cb-stat"><span class="n">'+fmtInt(c.novos)+'</span><span class="l">Novos</span></span>' +
-        '<span class="cb-stat"><span class="n">'+fmtInt(c.mudouSituacao)+'</span><span class="l">Mudaram situação</span></span>' +
-        '<span class="cb-stat"><span class="n">'+fmtInt(c.excluidos)+'</span><span class="l">Marcados excluído</span></span>' +
+        '<span class="cb-stat"><span class="n">'+fmtInt(c.mudouSituacao)+'</span><span class="l">Mudaram de situação</span></span>' +
+        '<span class="cb-stat"><span class="n">'+fmtInt(c.excluidos)+'</span><span class="l">Marcados como excluídos</span></span>' +
         '<span class="cb-stat"><span class="n">'+fmtInt(c.reativados)+'</span><span class="l">Reativados</span></span>' +
       '</span>' +
       notasHtml +

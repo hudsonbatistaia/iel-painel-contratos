@@ -273,3 +273,7 @@ a.programa-cartao:focus-visible { outline: 2px solid var(--accent-ring); outline
 .bar-row.clicavel { cursor: pointer; }
 .bar-row.clicavel:hover .name-text { color: var(--accent); text-decoration: underline; }
 .bar-row.clicavel:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; border-radius: 4px; }
+
+/* faixa da última carga: uma frase por linha */
+.consolidacao-banner .cb-linha { display: block; }
+.consolidacao-banner .cb-linha + .cb-linha { margin-top: 3px; }

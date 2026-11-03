@@ -54,6 +54,7 @@
       dataBaseAnterior: cargas[1] ? cargas[1].data_referencia : null,
       periodoInicio: c.periodo_inicio || null,
       periodoFim: c.periodo_fim || null,
+      atualizadaEm: c.criado_em ? new Date(c.criado_em).toLocaleDateString('pt-BR') : null,
       baseAnteriorTotal: c.total_antes,
       planilhaNovaTotal: c.total_planilha,
       novos: r.novos || 0,

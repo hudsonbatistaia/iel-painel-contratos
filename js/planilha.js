@@ -150,6 +150,7 @@
     (dicionario || []).forEach(function (d) { dic[d.tipo][d.chave] = d.valor; });
 
     var linhas = [], problemas = [], novas = {}, candidatos = {};
+    var datas = { menorFim: null, maiorInicio: null }; // nas linhas brutas, antes de juntar os aditivos
     linhasPlanilha.forEach(function (x, i) {
       var nLinha = x.__linha || i + 2; // linha 1 é o cabeçalho; __linha = linha original quando a planilha foi separada por programa
       var contrato = soDigitos(x[COLUNAS.contrato]);
@@ -194,6 +195,9 @@
         var v = { inicio: inicio, fim: fim, nasc: nasc }[campo];
         if (v === 'invalida') problemas.push({ linha: nLinha, contrato: contrato, motivo: 'data inválida em "' + COLUNAS[campo] + '" — campo ficará vazio' });
       });
+
+      if (fim && fim !== 'invalida' && (!datas.menorFim || fim < datas.menorFim)) datas.menorFim = fim;
+      if (inicio && inicio !== 'invalida' && (!datas.maiorInicio || inicio > datas.maiorInicio)) datas.maiorInicio = inicio;
 
       var seq = soDigitos(x[COLUNA_SEQUENCIA]);
 
@@ -261,7 +265,8 @@
       grafiasNovas: Object.keys(novas).map(function (k) { return novas[k]; }),
       outroPrograma: outroPrograma,
       tiposOutros: Object.keys(tiposOutros),
-      aditivosConsolidados: aditivosConsolidados
+      aditivosConsolidados: aditivosConsolidados,
+      datas: datas
     };
   }
 

@@ -91,7 +91,8 @@
         if (estado.bases[estado.programa].total > 0) throw new Error('A base inicial só pode ser importada com o banco vazio.');
         estado.baseInicial = j;
         estado.partes = [{ programa: estado.programa, linhas: j.linhas, grafiasNovas: [] }];
-        $('dataReferencia').value = j.data_referencia;
+        $('periodoInicio').value = '';
+        $('periodoFim').value = j.data_referencia;
         msg('msgLeitura', 'Base inicial com ' + fmtInt(j.linhas.length) + ' contratos (dados de ' + fmtData(j.data_referencia) + ').', 'ok');
         $('botoesPrevia').hidden = false;
         return;
@@ -123,7 +124,7 @@
         r.tiposOutros.join(', ') + '. Confira o programa escolhido acima.', 'erro');
       return;
     }
-    estado.partes = [{ programa: estado.programa, linhas: r.linhas, grafiasNovas: r.grafiasNovas, aditivosConsolidados: r.aditivosConsolidados }];
+    estado.partes = [{ programa: estado.programa, linhas: r.linhas, grafiasNovas: r.grafiasNovas, aditivosConsolidados: r.aditivosConsolidados, datas: r.datas }];
     msg('msgLeitura', contratos(r.linhas.length) + ' do ' + info.nome + (r.linhas.length === 1 ? ' lido' : ' lidos') +
       (r.aditivosConsolidados ? ' · ' + fmtInt(r.aditivosConsolidados) + ' aditivo(s) consolidado(s)' : '') +
       (r.outroPrograma ? ' · ' + fmtInt(r.outroPrograma) + ' linha(s) de outro programa ignorada(s) (' + r.tiposOutros.join(', ') + ')' : '') +
@@ -165,7 +166,7 @@
       var r = window.Planilha.interpretar(grupos[p], estado.dicionarios[p], null, { extrasEstagio: p === 'estagio', extrasAprendiz: p === 'aprendiz' });
       if (faltamColunas(r)) return;
       r.problemas.forEach(function (pr) { pr.motivo = PR.INFO[p].nome + ': ' + pr.motivo; problemas.push(pr); });
-      partes.push({ programa: p, linhas: r.linhas, grafiasNovas: r.grafiasNovas, aditivosConsolidados: r.aditivosConsolidados });
+      partes.push({ programa: p, linhas: r.linhas, grafiasNovas: r.grafiasNovas, aditivosConsolidados: r.aditivosConsolidados, datas: r.datas });
     }
     problemas.sort(function (a, b) { return a.linha - b.linha; });
     estado.partes = partes;
@@ -179,8 +180,10 @@
     $('botoesPrevia').hidden = false;
   }
 
-  /* Período da extração: tenta tirar do nome do arquivo (ex.: "Geral - 01-01-2020 30-09-26.xlsx");
-     se não der, usa do contrato mais antigo da planilha até a data de referência. Fica editável. */
+  /* Período da extração: tenta tirar do nome do arquivo (ex.: "Geral - 01-01-2020 30-09-26.xlsx").
+     Sem datas no nome: em "Só alguns contratos", a extração traz os contratos em vigor no período,
+     então vai do menor encerramento ao maior início; em "Extração completa", do contrato mais
+     antigo até hoje. Fica editável. O fim do período é a data de referência da carga. */
   function datasDoNome(nome) {
     var out = [], m, re = /(\d{1,2})[-.](\d{1,2})[-.](\d{4}|\d{2})(?!\d)/g;
     while ((m = re.exec(nome || ''))) {
@@ -197,10 +200,16 @@
     inicios.sort();
     var maisAntigo = inicios[0] || '';
     var ini, fim, origem;
+    var menorFim = null, maiorInicio = null;
+    estado.partes.forEach(function (pt) {
+      var d = pt.datas || {};
+      if (d.menorFim && (!menorFim || d.menorFim < menorFim)) menorFim = d.menorFim;
+      if (d.maiorInicio && (!maiorInicio || d.maiorInicio > maiorInicio)) maiorInicio = d.maiorInicio;
+    });
     if (doNome.length >= 2) { ini = doNome[0]; fim = doNome[doNome.length - 1]; origem = 'pelo nome do arquivo'; }
     else if (doNome.length === 1) { ini = maisAntigo; fim = doNome[0]; origem = 'o fim pelo nome do arquivo e o início pelo contrato mais antigo da planilha'; }
-    else { ini = maisAntigo; fim = $('dataReferencia').value; origem = 'pelo contrato mais antigo da planilha até a data de referência'; }
-    if (doNome.length) $('dataReferencia').value = fim; // a data dos dados é o fim da extração
+    else if (tipoEscolhido() === 'parcial' && menorFim && maiorInicio && menorFim <= maiorInicio) { ini = menorFim; fim = maiorInicio; origem = 'pelas datas dos contratos da planilha'; }
+    else { ini = maisAntigo; fim = hojeISO(); origem = 'do contrato mais antigo da planilha até hoje'; }
     $('periodoInicio').value = ini || '';
     $('periodoFim').value = fim || '';
     msg('periodoDica', 'Período sugerido ' + origem + '. Confira e corrija se a extração foi feita com outro período.', 'ok');
@@ -276,9 +285,9 @@
     var linhas = estado.partes.map(function (parte, pi) {
       return estado.baseInicial ? parte.linhas : window.Planilha.aplicarGrafias(parte.linhas, decisoes[pi]);
     });
-    var data = $('dataReferencia').value;
-    if (!data) throw new Error('Informe a data de referência dos dados (passo 1).');
     var pIni = $('periodoInicio').value || null, pFim = $('periodoFim').value || null;
+    var data = pFim; // a data de referência da carga é o fim do período
+    if (!data) throw new Error('Informe o período da extração, de e até (passo 1).');
     if (!estado.baseInicial && (!pIni || !pFim)) throw new Error('Informe o período da extração, de e até (passo 1).');
     if (pIni && pFim && pIni > pFim) throw new Error('No período da extração, a data "de" está depois da data "até" (passo 1).');
     var comum = {
@@ -332,7 +341,7 @@
     if (r.excluidos > 0 && base.total && r.excluidos > base.total * 0.1) {
       alertas.push('Atenção: ' + fmtInt(r.excluidos) + ' contratos do ' + nome + ' vão virar "Contrato Excluído". Confira se esta é mesmo a extração completa deste programa; se for só uma parte, escolha "Só alguns contratos" no passo 1.');
     }
-    var dataRef = $('dataReferencia').value;
+    var dataRef = $('periodoFim').value;
     if (base.ultimaData && dataRef < base.ultimaData) {
       alertas.push(nome + ': a data de referência (' + fmtData(dataRef) + ') é anterior à da base atual (' + fmtData(base.ultimaData) + '). Se a planilha for antiga, ela pode desfazer atualizações mais novas.');
     }
@@ -485,11 +494,15 @@
   ['dragenter', 'dragover'].forEach(function (ev) { zona.addEventListener(ev, function (e) { e.preventDefault(); zona.classList.add('arrastando'); }); });
   ['dragleave', 'drop'].forEach(function (ev) { zona.addEventListener(ev, function (e) { e.preventDefault(); zona.classList.remove('arrastando'); }); });
   zona.addEventListener('drop', function (e) { if (e.dataTransfer.files[0]) lerArquivo(e.dataTransfer.files[0]); });
-  document.querySelectorAll('input[name="tipo"]').forEach(function (r) { r.addEventListener('change', limparPrevia); });
+  document.querySelectorAll('input[name="tipo"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      limparPrevia();
+      if (estado.partes.length && !estado.baseInicial) sugerirPeriodo(); // a sugestão depende do tipo
+    });
+  });
   document.querySelectorAll('input[name="programa"]').forEach(function (r) {
     r.addEventListener('change', function () { if (r.checked) trocarPrograma(r.value); });
   });
-  $('dataReferencia').addEventListener('change', limparPrevia);
   $('periodoInicio').addEventListener('change', limparPrevia);
   $('periodoFim').addEventListener('change', limparPrevia);
   $('btnPrevia').addEventListener('click', verPrevia);
@@ -503,7 +516,6 @@
   });
 
   (async function iniciar() {
-    $('dataReferencia').value = hojeISO();
     if (!(await A.sessaoAtual())) { window.location.href = 'https://portal.hbone.com.br'; return; }
     try {
       var eu = await A.rpc('sessao');
