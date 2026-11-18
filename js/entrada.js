@@ -114,6 +114,7 @@
     $('inicioUsuario').textContent = quem;
     $('linkAcessos').hidden = !admin;
     $('inicioAcessos').hidden = !admin;
+    $('inicioCarga').hidden = !admin;
     if (!vigiando) { vigiando = true; A.vigiarInatividade(function () { window.location.reload(); }); }
 
     var programa = PR.atual();
