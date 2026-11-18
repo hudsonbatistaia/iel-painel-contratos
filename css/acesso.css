@@ -283,12 +283,12 @@ a.programa-cartao:focus-visible { outline: 2px solid var(--accent-ring); outline
 .inicio-linha .inicio-pergunta { margin: 0; }
 .inicio-carga { margin-top: 0; padding: 9px 16px; font-size: 14px; }
 .inicio-sobre {
-  margin-top: 28px; padding: 22px 24px; border: 1px solid var(--border); border-radius: 14px;
+  margin-top: 32px; padding: 28px 32px; border: 1px solid var(--border); border-radius: 14px;
   background: var(--surface-1); color: var(--text-secondary);
 }
 .inicio-sobre h3 { font-family: "Archivo", system-ui, sans-serif; font-size: 17px; color: var(--text-primary); margin: 0 0 8px; }
-.inicio-sobre > p { font-size: 14.5px; line-height: 1.6; margin: 0 0 18px; max-width: 80ch; }
-.sobre-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 24px; }
-.sobre-item h4 { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+.inicio-sobre > p { font-size: 14.5px; line-height: 1.6; margin: 0 0 26px; max-width: 70ch; }
+.sobre-grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px 48px; }
+.sobre-item h4 { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
 .sobre-item ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.55; }
-.sobre-item li + li { margin-top: 4px; }
+.sobre-item li + li { margin-top: 8px; }
