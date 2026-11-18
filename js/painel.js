@@ -85,22 +85,7 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
     toastTimer = setTimeout(function(){ el.classList.remove('show'); }, durationMs || 3200);
   }
 
-  /* ================= TEMA ================= */
-  var THEME_KEY = 'jaTheme';
-  function getSavedTheme() {
-    try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; }
-  }
-  function saveTheme(choice) {
-    try { localStorage.setItem(THEME_KEY, choice); } catch (e) {}
-  }
-  function applyTheme(choice) {
-    var root = document.documentElement;
-    if (choice === 'light' || choice === 'dark') root.setAttribute('data-theme', choice);
-    else root.removeAttribute('data-theme');
-    document.querySelectorAll('.theme-opt').forEach(function(btn){
-      btn.classList.toggle('on', btn.getAttribute('data-theme-choice') === choice);
-    });
-  }
+  /* TEMA: fica em js/tema.js (vale para a tela inicial e o painel). */
   /* Botão "voltar ao topo" (24/08/2026). scroll com requestAnimationFrame
      pra não rodar a lógica de show/hide a cada pixel — só uma vez por frame,
      leve mesmo num painel longo como esse. */
@@ -122,17 +107,6 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
     });
   }
 
-  function initThemeSwitch() {
-    var saved = getSavedTheme() || 'auto';
-    applyTheme(saved);
-    document.querySelectorAll('.theme-opt').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var choice = this.getAttribute('data-theme-choice');
-        applyTheme(choice);
-        saveTheme(choice);
-      });
-    });
-  }
 
   /* ================= ÍCONE DE INFORMAÇÃO DO PROTÓTIPO =================
      Abre no hover (CSS) e também no clique/toque (JS, pra funcionar em
@@ -2190,7 +2164,6 @@ window.iniciarPainel = function (RECORDS, AGG, OPC) {
   }
 
   /* ================= INIT ================= */
-  initThemeSwitch();
   initInfoTooltip();
   initBackToTop();
   renderKPIs();

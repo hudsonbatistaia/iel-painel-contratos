@@ -7,9 +7,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tlcmkfterimzhbdczkpa.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Painel de Contratos</title>
 <link rel="icon" href="img/logo-iel.png">
-<link rel="stylesheet" href="css/painel.css?v=2.6.0">
-<link rel="stylesheet" href="css/acesso.css?v=2.6.0">
-<script src="js/tema.js?v=2.6.0"></script>
+<link rel="stylesheet" href="css/painel.css?v=2.6.1">
+<link rel="stylesheet" href="css/acesso.css?v=2.6.1">
+<script src="js/tema.js?v=2.6.1"></script>
 </head>
 <body class="carregando">
 
@@ -66,6 +66,11 @@
         </div>
       </div>
       <div class="topbar-meta">
+        <div class="theme-switch" role="group" aria-label="Tema do painel">
+          <button class="theme-opt" data-theme-choice="auto" type="button">Auto</button>
+          <button class="theme-opt" data-theme-choice="light" type="button">Claro</button>
+          <button class="theme-opt" data-theme-choice="dark" type="button">Escuro</button>
+        </div>
         <div class="usuario-barra">
           <span class="usuario-nome" id="inicioUsuario"></span>
           <a class="usuario-acao" id="inicioAcessos" href="acessos.html" hidden>Acessos</a>
@@ -944,15 +949,15 @@
 </div>
 
 <script src="vendor/supabase-2.45.4.min.js"></script>
-<script src="js/config.js?v=2.6.0"></script>
-<script src="js/acesso.js?v=2.6.0"></script>
-<script src="js/agregados.js?v=2.6.0"></script>
-<script src="js/painel.js?v=2.6.0"></script>
-<script src="js/programas.js?v=2.6.0"></script>
-<script src="js/graficos.js?v=2.6.0"></script>
-<script src="js/estagio.js?v=2.6.0"></script>
-<script src="js/aprendiz.js?v=2.6.0"></script>
-<script src="js/carteira.js?v=2.6.0"></script>
-<script src="js/entrada.js?v=2.6.0"></script>
+<script src="js/config.js?v=2.6.1"></script>
+<script src="js/acesso.js?v=2.6.1"></script>
+<script src="js/agregados.js?v=2.6.1"></script>
+<script src="js/painel.js?v=2.6.1"></script>
+<script src="js/programas.js?v=2.6.1"></script>
+<script src="js/graficos.js?v=2.6.1"></script>
+<script src="js/estagio.js?v=2.6.1"></script>
+<script src="js/aprendiz.js?v=2.6.1"></script>
+<script src="js/carteira.js?v=2.6.1"></script>
+<script src="js/entrada.js?v=2.6.1"></script>
 </body>
 </html>
